@@ -1,6 +1,6 @@
 === Featured Image Creator AI ===
 Contributors: gunjanjaswal
-Tags: AI, featured image, thumbnail, automation, DALL-E, Gemini, image generator, bulk, scheduled posts, OpenAI
+Tags: AI, featured image, automation, DALL-E, thumbnail
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
@@ -8,7 +8,7 @@ Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Generate stunning AI-powered featured images automatically for posts using OpenAI DALL-E, Google Gemini, or Stability AI. Supports bulk generation and scheduled posts.
+Auto-generate AI-powered featured images using OpenAI DALL-E, Google Gemini, or Stability AI. Supports bulk generation and scheduled posts.
 
 == Description ==
 
