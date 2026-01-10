@@ -3,10 +3,10 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires at least: 5.8
  * Requires PHP: 7.4
- * Author: Gunjan Jaswaal
+ * Author: Gunjan Jaswal
  * Author URI: https://www.gunjanjaswal.me
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -96,6 +96,41 @@ function aifig_init()
 	}
 }
 add_action('init', 'aifig_init');
+
+/**
+ * Auto-generate featured image when scheduled post is published.
+ *
+ * @param WP_Post $post Post object.
+ */
+function aifig_auto_generate_on_publish($post)
+{
+	// Only process posts (not pages or custom post types)
+	if ($post->post_type !== 'post') {
+		return;
+	}
+
+	// Check if post already has featured image
+	if (has_post_thumbnail($post->ID)) {
+		return;
+	}
+
+	// Check if API is configured
+	$generator = new AIFIG_Image_Generator();
+	if (!$generator->is_configured()) {
+		return;
+	}
+
+	// Generate featured image
+	$result = $generator->generate_for_post($post->ID);
+
+	// Log result for debugging
+	if (is_wp_error($result)) {
+		error_log('AIFIG: Failed to auto-generate image for post ' . $post->ID . ': ' . $result->get_error_message());
+	} else {
+		error_log('AIFIG: Successfully auto-generated image for post ' . $post->ID);
+	}
+}
+add_action('future_to_publish', 'aifig_auto_generate_on_publish');
 
 /**
  * Enqueue admin scripts and styles.

@@ -1,8 +1,8 @@
 # Featured Image Creator AI
 
-A WordPress plugin that automatically generates beautiful 1024x675px featured images for your posts using AI image generation. Bring your own API key model.
+Generate stunning AI-powered featured images automatically for your WordPress posts using OpenAI DALL-E 3, Google Gemini (Imagen), or Stability AI. Supports single post generation, bulk processing, and automatic generation for scheduled posts. Bring your own API key for complete control.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -238,7 +238,7 @@ This plugin is licensed under the GPL v2 or later.
 
 ```
 Featured Image Creator AI
-Copyright (C) 2024  Gunjan Jaswaal
+Copyright (C) 2024  Gunjan Jaswal
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -253,13 +253,18 @@ GNU General Public License for more details.
 
 ## Credits
 
-- Developed by [Gunjan Jaswaal](https://www.gunjanjaswal.me)
+- Developed by [Gunjan Jaswal](https://www.gunjanjaswal.me)
 - Powered by:
   - [OpenAI DALL-E 3](https://openai.com/dall-e-3)
   - [Google Gemini (Imagen)](https://ai.google.dev/)
   - [Stability AI](https://stability.ai/)
 
 ## Changelog
+
+### 1.0.1 (2026-01-10)
+- Added automatic featured image generation for scheduled posts
+- Fixed author name spelling
+- When a scheduled post is published without a featured image, one is automatically generated
 
 ### 1.0.0 (2024-12-26)
 - Initial release
