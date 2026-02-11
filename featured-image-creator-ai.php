@@ -3,7 +3,7 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: Gunjan Jaswal
@@ -23,7 +23,7 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('AIFIG_VERSION', '1.0.3');
+define('AIFIG_VERSION', '1.0.2');
 define('AIFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIFIG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -125,9 +125,9 @@ function aifig_auto_generate_on_publish($post)
 
 	// Log result for debugging
 	if (is_wp_error($result)) {
-		error_log('AIFIG: Failed to auto-generate image for post ' . $post->ID . ': ' . $result->get_error_message());
+		// error_log('AIFIG: Failed to auto-generate image for post ' . $post->ID . ': ' . $result->get_error_message());
 	} else {
-		error_log('AIFIG: Successfully auto-generated image for post ' . $post->ID);
+		// error_log('AIFIG: Successfully auto-generated image for post ' . $post->ID);
 	}
 }
 add_action('future_to_publish', 'aifig_auto_generate_on_publish');
@@ -137,10 +137,13 @@ add_action('future_to_publish', 'aifig_auto_generate_on_publish');
  */
 function aifig_enqueue_admin_assets($hook)
 {
-	// Only load on post edit screens, settings page, and bulk generation page
-	$allowed_hooks = array('post.php', 'post-new.php', 'edit.php', 'settings_page_aifig-settings', 'tools_page_aifig-bulk-generate');
+	// Only load on post edit screens and plugin pages
+	$allowed_hooks = array('post.php', 'post-new.php', 'edit.php');
 
-	if (!in_array($hook, $allowed_hooks, true)) {
+	// Check if we are on a plugin page (settings or bulk generate)
+	$is_plugin_page = (strpos($hook, 'aifig') !== false);
+
+	if (!in_array($hook, $allowed_hooks, true) && !$is_plugin_page) {
 		return;
 	}
 
@@ -152,7 +155,7 @@ function aifig_enqueue_admin_assets($hook)
 	);
 
 	wp_enqueue_script(
-		'aifig-admin-js',
+		'aifig-admin-core-js',
 		AIFIG_PLUGIN_URL . 'assets/js/admin.js',
 		array('jquery'),
 		AIFIG_VERSION,
@@ -161,7 +164,7 @@ function aifig_enqueue_admin_assets($hook)
 
 	// Localize script with AJAX URL and nonce
 	wp_localize_script(
-		'aifig-admin-js',
+		'aifig-admin-core-js',
 		'aifigData',
 		array(
 			'ajaxUrl' => admin_url('admin-ajax.php'),

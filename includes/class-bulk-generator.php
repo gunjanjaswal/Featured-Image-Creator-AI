@@ -28,6 +28,7 @@ class AIFIG_Bulk_Generator
         add_action('admin_notices', array($this, 'bulk_action_notices'));
         add_action('admin_menu', array($this, 'add_bulk_page'));
         add_action('wp_ajax_aifig_batch_generate', array($this, 'ajax_batch_generate'));
+        add_action('wp_ajax_aifig_get_batch_ids', array($this, 'ajax_get_batch_ids'));
     }
 
     /**
@@ -179,13 +180,40 @@ class AIFIG_Bulk_Generator
             return;
         }
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display logic only.
+        $mode = isset($_GET['mode']) && $_GET['mode'] === 'regenerate' ? 'regenerate' : 'missing';
         $generator = new AIFIG_Image_Generator();
-        $posts = AIFIG_Image_Generator::get_posts_without_featured_image();
+        
+        if ($mode === 'regenerate') {
+            // Fetch all posts (published)
+             $posts = AIFIG_Image_Generator::get_posts_without_featured_image(array(
+                // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional override.
+                'meta_query' => array(), // Override to get all posts
+             ));
+        } else {
+            $posts = AIFIG_Image_Generator::get_posts_without_featured_image();
+        }
         ?>
         <div class="wrap aifig-bulk-container">
             <h1><?php esc_html_e('Bulk Generate Featured Images', 'featured-image-creator-ai'); ?></h1>
+            
+            <nav class="nav-tab-wrapper" style="margin-bottom: 20px;">
+                <a href="<?php echo esc_url(admin_url('admin.php?page=aifig-bulk-generate&mode=missing')); ?>" class="nav-tab <?php echo $mode === 'missing' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Generate Missing', 'featured-image-creator-ai'); ?>
+                </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=aifig-bulk-generate&mode=regenerate')); ?>" class="nav-tab <?php echo $mode === 'regenerate' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Regenerate All', 'featured-image-creator-ai'); ?>
+                </a>
+            </nav>
+
             <p class="description" style="font-size: 16px; margin-bottom: 30px;">
-                <?php esc_html_e('Automatically generate AI-powered featured images for all posts that don\'t have one.', 'featured-image-creator-ai'); ?>
+                <?php 
+                if ($mode === 'regenerate') {
+                    esc_html_e('Regenerate featured images for ALL posts. This will overwrite existing featured images.', 'featured-image-creator-ai');
+                } else {
+                    esc_html_e('Automatically generate AI-powered featured images for posts that don\'t have one.', 'featured-image-creator-ai');
+                }
+                ?>
             </p>
 
             <?php if (!$generator->is_configured()): ?>
@@ -193,7 +221,7 @@ class AIFIG_Bulk_Generator
                     <h3 style="margin-top: 0;">⚠️ <?php esc_html_e('API Not Configured', 'featured-image-creator-ai'); ?></h3>
                     <p>
                         <?php
-                        $settings_url = admin_url('options-general.php?page=aifig-settings');
+                        $settings_url = admin_url('admin.php?page=aifig-settings');
                         printf(
                             /* translators: %s: Settings page URL */
                             wp_kses_post(__('Please <a href="%s"><strong>configure your API key</strong></a> to use this feature.', 'featured-image-creator-ai')),
@@ -210,7 +238,7 @@ class AIFIG_Bulk_Generator
                         <?php esc_html_e('All Set!', 'featured-image-creator-ai'); ?>
                     </h2>
                     <p style="font-size: 18px; margin: 0; opacity: 0.9;">
-                        <?php esc_html_e('All your posts have featured images. Nothing to generate!', 'featured-image-creator-ai'); ?>
+                        <?php esc_html_e('No posts found to process.', 'featured-image-creator-ai'); ?>
                     </p>
                 </div>
             <?php else: ?>
@@ -222,23 +250,41 @@ class AIFIG_Bulk_Generator
                             <div style="font-size: 48px; font-weight: 700; margin-bottom: 15px;"><?php echo count($posts); ?></div>
                             <div style="font-size: 18px; opacity: 0.9;">
                                 <?php
-                                printf(
-                                    /* translators: %d: Number of posts */
-                                    esc_html(_n(
-                                        'Post without featured image',
-                                        'Posts without featured images',
-                                        count($posts),
-                                        'featured-image-creator-ai'
-                                    ))
-                                );
+                                if ($mode === 'regenerate') {
+                                     printf(
+                                        /* translators: %d: Number of posts */
+                                        esc_html(_n(
+                                            'Post available for regeneration',
+                                            'Posts available for regeneration',
+                                            count($posts),
+                                            'featured-image-creator-ai'
+                                        ))
+                                    );
+                                } else {
+                                    printf(
+                                        /* translators: %d: Number of posts */
+                                        esc_html(_n(
+                                            'Post without featured image',
+                                            'Posts without featured images',
+                                            count($posts),
+                                            'featured-image-creator-ai'
+                                        ))
+                                    );
+                                }
                                 ?>
                             </div>
                         </div>
                         <div>
                             <button type="button" class="button button-hero aifig-start-batch"
-                                data-post-ids="<?php echo esc_attr(wp_json_encode($posts)); ?>">
+                                data-mode="<?php echo esc_attr($mode); ?>">
                                 <span class="dashicons dashicons-images-alt2"></span>
-                                <?php esc_html_e('Generate All Images', 'featured-image-creator-ai'); ?>
+                                <?php 
+                                if ($mode === 'regenerate') {
+                                    esc_html_e('Regenerate All Images', 'featured-image-creator-ai');
+                                } else {
+                                    esc_html_e('Generate All Images', 'featured-image-creator-ai');
+                                }
+                                ?>
                             </button>
                         </div>
                     </div>
@@ -263,29 +309,25 @@ class AIFIG_Bulk_Generator
                     </div>
                 </div>
 
-                <div class="aifig-batch-progress" style="display: none; max-width: 900px; margin: 0 auto;">
-                    <div class="card">
-                        <h3 style="color: #667eea; margin-top: 0;">
-                            <span class="dashicons dashicons-update" style="animation: rotation 2s infinite linear;"></span>
-                            <?php esc_html_e('Generation in Progress', 'featured-image-creator-ai'); ?>
-                        </h3>
-                        <progress max="100" value="0" style="width: 100%; height: 30px; border-radius: 15px;"></progress>
-                        <p style="font-size: 18px; font-weight: 600; text-align: center; margin: 15px 0; color: #667eea;">
-                            <span class="aifig-progress-text">0%</span>
-                            <span style="margin: 0 10px; color: #646970;">•</span>
-                            <span class="aifig-progress-status" style="color: #646970;"></span>
-                        </p>
-                    </div>
+                <div class="aifig-batch-progress card" style="display: none;">
+                    <h3 style="color: #667eea; margin-top: 0;">
+                        <span class="dashicons dashicons-update" style="animation: rotation 2s infinite linear;"></span>
+                        <?php esc_html_e('Generation in Progress', 'featured-image-creator-ai'); ?>
+                    </h3>
+                    <progress max="100" value="0" style="width: 100%; height: 30px; border-radius: 15px;"></progress>
+                    <p style="font-size: 18px; font-weight: 600; text-align: center; margin: 15px 0; color: #667eea;">
+                        <span class="aifig-progress-text">0%</span>
+                        <span style="margin: 0 10px; color: #646970;">•</span>
+                        <span class="aifig-progress-status" style="color: #646970;"></span>
+                    </p>
                 </div>
 
-                <div class="aifig-batch-results" style="display: none;">
-                    <div class="card">
-                        <h3 style="color: #11998e; margin-top: 0;">
-                            <span class="dashicons dashicons-yes-alt"></span>
-                            <?php esc_html_e('Results', 'featured-image-creator-ai'); ?>
-                        </h3>
-                        <div class="aifig-results-content"></div>
-                    </div>
+                <div class="aifig-batch-results card" style="display: none;">
+                    <h3 style="color: #11998e; margin-top: 0;">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                        <?php esc_html_e('Results', 'featured-image-creator-ai'); ?>
+                    </h3>
+                    <div class="aifig-results-content"></div>
                 </div>
 
                 <style>
@@ -351,5 +393,30 @@ class AIFIG_Bulk_Generator
                 'attachment_id' => $attachment_id,
             )
         );
+    }
+
+    /**
+     * AJAX handler to get batch IDs.
+     */
+    public function ajax_get_batch_ids()
+    {
+        // Verify nonce and capability
+        if (!AIFIG_Security::verify_request('aifig_generate_image', 'edit_posts')) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'featured-image-creator-ai')));
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by AIFIG_Security::verify_request.
+        $mode = isset($_POST['mode']) && $_POST['mode'] === 'regenerate' ? 'regenerate' : 'missing';
+
+        if ($mode === 'regenerate') {
+            $posts = AIFIG_Image_Generator::get_posts_without_featured_image(array(
+                // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional override.
+                'meta_query' => array(),
+            ));
+        } else {
+            $posts = AIFIG_Image_Generator::get_posts_without_featured_image();
+        }
+
+        wp_send_json_success($posts);
     }
 }

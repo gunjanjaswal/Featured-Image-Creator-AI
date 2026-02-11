@@ -45,20 +45,40 @@ class AIFIG_Image_Generator
         }
 
         $api_key = AIFIG_Security::decrypt($encrypted_key);
-        $provider = get_option('aifig_api_provider', 'openai');
+        $provider_setting = get_option('aifig_api_provider', 'openai');
+        $quality = get_option('aifig_image_quality', 'standard');
 
-        switch ($provider) {
-            case 'openai':
-                $this->api_provider = new AIFIG_OpenAI_Provider($api_key);
+        // Map setting to provider class and model/params
+        switch ($provider_setting) {
+            case 'openai': // Default DALL-E 3
+                $this->api_provider = new AIFIG_OpenAI_Provider($api_key, 'dall-e-3', $quality);
+                break;
+            case 'gpt-image-1':
+            case 'gpt-image-1-mini':
+            case 'gpt-image-1.5':
+            case 'gpt-image-latest':
+                // Assuming these map to specific OpenAI models or similar
+                // Adjust model name logic as needed based on actual API requirements
+                // For now, passing the setting value as the model name
+                $this->api_provider = new AIFIG_OpenAI_Provider($api_key, $provider_setting, $quality);
                 break;
             case 'gemini':
                 $this->api_provider = new AIFIG_Gemini_Provider($api_key);
                 break;
-            case 'stability':
-                $this->api_provider = new AIFIG_Stability_Provider($api_key);
+            case 'stability': // Stable Diffusion 3
+                $this->api_provider = new AIFIG_Stability_Provider($api_key, 'sd3');
+                break;
+            case 'seedream-4.5':
+                // Assuming this uses Stability provider with a different model code
+                $this->api_provider = new AIFIG_Stability_Provider($api_key, 'seedream-4.5'); // Verify model code if possible
                 break;
             default:
-                $this->api_provider = null;
+                // Fallback or legacy support
+                if (strpos($provider_setting, 'gpt-image') !== false) {
+                     $this->api_provider = new AIFIG_OpenAI_Provider($api_key, $provider_setting, $quality);
+                } else {
+                    $this->api_provider = null;
+                }
         }
     }
 
@@ -183,9 +203,12 @@ class AIFIG_Image_Generator
             }
         }
 
+        // Get output format
+        $output_format = get_option('aifig_output_format', 'png');
+        
         // Prepare file array
         $file_array = array(
-            'name' => sanitize_file_name($title) . '.png',
+            'name' => sanitize_file_name($title) . '.' . $output_format,
             'tmp_name' => $temp_file,
         );
 
@@ -194,6 +217,8 @@ class AIFIG_Image_Generator
 
         // Clean up temp file
         if (file_exists($temp_file)) {
+            // If sideload failed or moved the file, we might not need to delete, but usually safe to try if it exists still
+             // media_handle_sideload moves the file, so temp_file might be gone or empty
             wp_delete_file($temp_file);
         }
 

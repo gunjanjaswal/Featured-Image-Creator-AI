@@ -25,6 +25,27 @@ class AIFIG_Stability_Provider extends AIFIG_API_Interface
      */
     private $api_endpoint = 'https://api.stability.ai/v2beta/stable-image/generate/sd3';
 
+
+
+    /**
+     * Model to use.
+     *
+     * @var string
+     */
+    private $model;
+
+    /**
+     * Constructor.
+     *
+     * @param string $api_key API key.
+     * @param string $model   Model name (default: sd3).
+     */
+    public function __construct($api_key, $model = 'sd3')
+    {
+        parent::__construct($api_key);
+        $this->model = $model;
+    }
+
     /**
      * Get provider name.
      *
@@ -32,7 +53,7 @@ class AIFIG_Stability_Provider extends AIFIG_API_Interface
      */
     public function get_provider_name()
     {
-        return 'Stability AI (Stable Diffusion 3)';
+        return 'Stability AI (' . $this->model . ')';
     }
 
     /**
@@ -57,15 +78,23 @@ class AIFIG_Stability_Provider extends AIFIG_API_Interface
         $body .= "Content-Disposition: form-data; name=\"prompt\"\r\n\r\n";
         $body .= "{$prompt}\r\n";
 
+        // Add model if not default
+        if ($this->model !== 'sd3') {
+            $body .= "--{$boundary}\r\n";
+            $body .= "Content-Disposition: form-data; name=\"model\"\r\n\r\n";
+            $body .= "{$this->model}\r\n";
+        }
+
         // Add aspect ratio or dimensions
         $body .= "--{$boundary}\r\n";
         $body .= "Content-Disposition: form-data; name=\"aspect_ratio\"\r\n\r\n";
         $body .= $this->get_aspect_ratio_string($dimensions['width'], $dimensions['height']) . "\r\n";
 
         // Add output format
+        $output_format = get_option('aifig_output_format', 'png');
         $body .= "--{$boundary}\r\n";
         $body .= "Content-Disposition: form-data; name=\"output_format\"\r\n\r\n";
-        $body .= "png\r\n";
+        $body .= "{$output_format}\r\n";
 
         $body .= "--{$boundary}--\r\n";
 

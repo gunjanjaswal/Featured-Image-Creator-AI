@@ -92,41 +92,68 @@
 			}
 
 			var $btn = $(this);
-			var postIdsData = $btn.data('post-ids');
-
-			// Parse the post IDs - handle both string and array
-			if (typeof postIdsData === 'string') {
-				try {
-					postIds = JSON.parse(postIdsData);
-				} catch (e) {
-					postIds = [];
-				}
-			} else {
-				postIds = postIdsData || [];
-			}
-
-			if (!postIds || postIds.length === 0) {
-				return;
-			}
+			var mode = $btn.data('mode') || 'missing';
 
 			// Confirm action
-			if (!confirm(aifigData.strings.confirmBatch)) {
+			var confirmMsg = mode === 'regenerate'
+				? 'Are you sure you want to regenerate ALL featured images? This will overwrite existing images.'
+				: aifigData.strings.confirmBatch;
+
+			if (!confirm(confirmMsg)) {
 				return;
 			}
 
+			// Disable button and show loading
+			$btn.prop('disabled', true);
+			$btn.addClass('updating-message');
+			var originalText = $btn.html();
+			$btn.text('Preparing...');
+
+			// Fetch IDs via AJAX
+			$.ajax({
+				url: aifigData.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'aifig_get_batch_ids',
+					nonce: aifigData.nonce,
+					mode: mode
+				},
+				success: function (response) {
+					if (response.success && response.data.length > 0) {
+						postIds = response.data;
+						startBatchProcessing($btn);
+					} else {
+						alert('No posts found to process.');
+						$btn.prop('disabled', false);
+						$btn.html(originalText);
+					}
+				},
+				error: function (xhr, status, error) {
+					alert('Failed to fetch post IDs. Please try again.');
+					$btn.prop('disabled', false);
+					$btn.html(originalText);
+				}
+			});
+		});
+
+		function startBatchProcessing($btn) {
 			// Reset state
 			batchInProgress = true;
 			currentIndex = 0;
 			results = { success: [], errors: [] };
 
 			// Show progress
-			$btn.prop('disabled', true);
 			$('.aifig-batch-progress').show();
 			$('.aifig-batch-results').hide();
 
+			// Scroll to progress bar
+			$('html, body').animate({
+				scrollTop: $(".aifig-batch-progress").offset().top - 100
+			}, 500);
+
 			// Start processing
 			processNextPost();
-		});
+		}
 
 		function processNextPost() {
 			if (currentIndex >= postIds.length) {
@@ -228,7 +255,10 @@
 			$('.aifig-batch-results').show();
 
 			// Re-enable button
-			$('.aifig-start-batch').prop('disabled', false);
+			$('.aifig-start-batch').prop('disabled', false).text(
+				$('.aifig-start-batch').data('mode') === 'regenerate' ? 'Regenerate All Images' : 'Generate All Images'
+			);
+			// Restore icon if possible or just text is fine for now, page reload usually follows.
 
 			// Reload page after a delay to show updated post list
 			setTimeout(function () {
@@ -329,6 +359,47 @@
 	}
 
 	/**
+	 * Settings page dynamic logic
+	 */
+	function initSettingsPage() {
+		var $providerSelect = $('#aifig_api_provider');
+		var $qualityRow = $('#aifig_image_quality').closest('tr');
+		var $formatRow = $('#aifig_output_format').closest('tr');
+
+		if ($providerSelect.length === 0) {
+			return;
+		}
+
+		function updateVisibility() {
+			var provider = $providerSelect.val();
+			var isOpenAI = provider === 'openai' || provider.indexOf('gpt-image') !== -1;
+			var isStability = provider === 'stability' || provider === 'seedream-4.5';
+			var isGemini = provider === 'gemini';
+
+			// Quality: Only for OpenAI
+			if (isOpenAI) {
+				$qualityRow.show();
+			} else {
+				$qualityRow.hide();
+			}
+
+			// Output Format: Only for Stability
+			// (OpenAI returns URL/PNG usually, renaming leads to issues. Stability allows format request)
+			if (isStability) {
+				$formatRow.show();
+			} else {
+				$formatRow.hide();
+			}
+		}
+
+		// Initial state
+		updateVisibility();
+
+		// On change
+		$providerSelect.on('change', updateVisibility);
+	}
+
+	/**
 	 * Initialize on document ready
 	 */
 	$(document).ready(function () {
@@ -336,6 +407,7 @@
 		initBatchGeneration();
 		initTabSwitching();
 		initManualUpload();
+		initSettingsPage();
 	});
 
 })(jQuery);

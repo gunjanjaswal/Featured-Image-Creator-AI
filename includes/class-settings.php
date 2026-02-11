@@ -82,6 +82,26 @@ class AIFIG_Settings
 
         register_setting(
             'aifig_settings_group',
+            'aifig_image_quality',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default' => 'standard',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_output_format',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default' => 'png',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
             'aifig_prompt_template',
             array(
                 'type' => 'string',
@@ -143,6 +163,22 @@ class AIFIG_Settings
         );
 
         add_settings_field(
+            'aifig_image_quality',
+            __('Image Quality', 'featured-image-creator-ai'),
+            array($this, 'render_image_quality_field'),
+            'aifig-settings',
+            'aifig_image_section'
+        );
+
+        add_settings_field(
+            'aifig_output_format',
+            __('Output Format', 'featured-image-creator-ai'),
+            array($this, 'render_output_format_field'),
+            'aifig-settings',
+            'aifig_image_section'
+        );
+
+        add_settings_field(
             'aifig_prompt_template',
             __('Prompt Template', 'featured-image-creator-ai'),
             array($this, 'render_prompt_template_field'),
@@ -160,7 +196,7 @@ class AIFIG_Settings
     }
 
     /**
-     * Sanitize API key before saving.
+     * Sanitize API key before save.
      *
      * @param string $api_key API key to sanitize.
      * @return string Encrypted API key.
@@ -202,19 +238,39 @@ class AIFIG_Settings
         $provider = get_option('aifig_api_provider', 'openai');
         ?>
         <select name="aifig_api_provider" id="aifig_api_provider">
-            <option value="openai" <?php selected($provider, 'openai'); ?>>
-                <?php esc_html_e('OpenAI DALL-E 3', 'featured-image-creator-ai'); ?>
-            </option>
-            <option value="gemini" <?php selected($provider, 'gemini'); ?>>
-                <?php esc_html_e('Google Gemini (Imagen)', 'featured-image-creator-ai'); ?>
-            </option>
-            <option value="stability" <?php selected($provider, 'stability'); ?>>
-                <?php esc_html_e('Stability AI (Stable Diffusion 3)', 'featured-image-creator-ai'); ?>
-            </option>
+            <optgroup label="OpenAI">
+                <option value="openai" <?php selected($provider, 'openai'); ?>>
+                    <?php esc_html_e('DALL-E 3', 'featured-image-creator-ai'); ?>
+                </option>
+                <option value="gpt-image-1" <?php selected($provider, 'gpt-image-1'); ?>>
+                    <?php esc_html_e('GPT Image 1', 'featured-image-creator-ai'); ?>
+                </option>
+                <option value="gpt-image-1-mini" <?php selected($provider, 'gpt-image-1-mini'); ?>>
+                    <?php esc_html_e('GPT Image 1 (Mini)', 'featured-image-creator-ai'); ?>
+                </option>
+                <option value="gpt-image-1.5" <?php selected($provider, 'gpt-image-1.5'); ?>>
+                    <?php esc_html_e('GPT Image 1.5', 'featured-image-creator-ai'); ?>
+                </option>
+                <option value="gpt-image-latest" <?php selected($provider, 'gpt-image-latest'); ?>>
+                    <?php esc_html_e('GPT Image Latest', 'featured-image-creator-ai'); ?>
+                </option>
+            </optgroup>
+            <optgroup label="Google">
+                <option value="gemini" <?php selected($provider, 'gemini'); ?>>
+                    <?php esc_html_e('Google Gemini (Imagen)', 'featured-image-creator-ai'); ?>
+                </option>
+            </optgroup>
+            <optgroup label="Stability AI">
+                <option value="stability" <?php selected($provider, 'stability'); ?>>
+                    <?php esc_html_e('Stable Diffusion 3', 'featured-image-creator-ai'); ?>
+                </option>
+                <option value="seedream-4.5" <?php selected($provider, 'seedream-4.5'); ?>>
+                    <?php esc_html_e('SeeDream 4.5', 'featured-image-creator-ai'); ?>
+                </option>
+            </optgroup>
         </select>
         <p class="description">
-            <?php esc_html_e('Select your AI image generation provider.', 'featured-image-creator-ai'); ?>
-        </p>
+            <?php esc_html_e('Select your AI image generation provider and model.', 'featured-image-creator-ai'); ?>
         </p>
         <?php
     }
@@ -238,7 +294,7 @@ class AIFIG_Settings
             <p class="description">
                 <?php
                 $provider = get_option('aifig_api_provider', 'openai');
-                if ('openai' === $provider) {
+                if (in_array($provider, ['openai', 'gpt-image-1', 'gpt-image-1.5', 'gpt-image-latest'])) {
                     printf(
                         /* translators: %s: OpenAI API keys URL */
                         esc_html__('Get your API key from %s', 'featured-image-creator-ai'),
@@ -250,7 +306,7 @@ class AIFIG_Settings
                         esc_html__('Get your API key from %s', 'featured-image-creator-ai'),
                         '<a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>'
                     );
-                } elseif ('stability' === $provider) {
+                } elseif (in_array($provider, ['stability', 'seedream-4.5'])) {
                     printf(
                         /* translators: %s: Stability AI URL */
                         esc_html__('Get your API key from %s', 'featured-image-creator-ai'),
@@ -261,6 +317,48 @@ class AIFIG_Settings
             </p>
         <?php endif; ?>
     <?php
+    }
+
+    /**
+     * Render image quality field.
+     */
+    public function render_image_quality_field()
+    {
+        $quality = get_option('aifig_image_quality', 'standard');
+        ?>
+        <select name="aifig_image_quality" id="aifig_image_quality">
+            <option value="standard" <?php selected($quality, 'standard'); ?>>
+                <?php esc_html_e('Standard', 'featured-image-creator-ai'); ?>
+            </option>
+            <option value="hd" <?php selected($quality, 'hd'); ?>>
+                <?php esc_html_e('HD', 'featured-image-creator-ai'); ?>
+            </option>
+            <option value="low" <?php selected($quality, 'low'); ?>>
+                <?php esc_html_e('Low', 'featured-image-creator-ai'); ?>
+            </option>
+        </select>
+        <p class="description">
+            <?php esc_html_e('Select image quality (only applies to supported models like DALL-E 3).', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render output format field.
+     */
+    public function render_output_format_field()
+    {
+        $format = get_option('aifig_output_format', 'png');
+        ?>
+        <select name="aifig_output_format" id="aifig_output_format">
+            <option value="png" <?php selected($format, 'png'); ?>>PNG</option>
+            <option value="jpg" <?php selected($format, 'jpg'); ?>>JPG</option>
+            <option value="webp" <?php selected($format, 'webp'); ?>>WEBP</option>
+        </select>
+        <p class="description">
+            <?php esc_html_e('Select output image format.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
     }
 
     /**
@@ -324,7 +422,7 @@ class AIFIG_Settings
                 <p style="margin-bottom: 20px; opacity: 0.9;">Generate featured images for your posts</p>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="<?php echo esc_url(admin_url('tools.php?page=aifig-bulk-generate')); ?>" class="button button-hero"
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=aifig-bulk-generate')); ?>" class="button button-hero"
                         style="background: white; color: #667eea; border: none; padding: 12px 24px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <span class="dashicons dashicons-images-alt2" style="font-size: 20px;"></span>
                         <?php esc_html_e('Bulk Generate Images', 'featured-image-creator-ai'); ?>

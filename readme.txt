@@ -1,18 +1,18 @@
 === Featured Image Creator AI ===
 Contributors: gunjanjaswal
-Tags: AI, featured image, automation, DALL-E, thumbnail
+Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Auto-generate AI-powered featured images using OpenAI DALL-E, Google Gemini, or Stability AI. Supports bulk generation and scheduled posts.
+Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3), Google Gemini, or Stability AI. Supports bulk generation and more.
 
 == Description ==
 
-Featured Image Creator AI helps you create stunning featured images for your WordPress posts using AI image generation technology. Simply provide your API key, and the plugin will generate professional-quality images based on your post titles.
+Featured Image Creator AI is the ultimate tool to automatically generate professional-quality featured images for your WordPress posts using cutting-edge AI technology. Whether you need a single image or want to process your entire library, this plugin handles it all with support for top-tier AI providers like **OpenAI (DALL-E 3, GPT Image models)**, **Google Gemini (Imagen)**, and **Stability AI (Stable Diffusion 3, SeeDream)**.
 
 = Features =
 
@@ -133,6 +133,13 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 4. Generated featured image example
 
 == Changelog ==
+
+= 1.0.2 =
+* Added new image generation models: GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest
+* Added SeaDream 4.5 support for Stability AI
+* Added image quality settings (Standard/HD/Low) and output format selection (PNG/JPG/WEBP)
+* Added Bulk Regeneration feature to regenerate images for all posts
+* Fixed image dimension error for custom models
 
 = 1.0.1 =
 * Added automatic featured image generation for scheduled posts

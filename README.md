@@ -1,21 +1,22 @@
 # Featured Image Creator AI
 
-Generate stunning AI-powered featured images automatically for your WordPress posts using OpenAI DALL-E 3, Google Gemini (Imagen), or Stability AI. Supports single post generation, bulk processing, and automatic generation for scheduled posts. Bring your own API key for complete control.
+Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Supports bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
 
 ## Features
 
-- 🎨 **Multiple AI Providers** - Choose from OpenAI DALL-E 3, Google Gemini (Imagen), or Stability AI
+- 🎨 **Multiple AI Providers** - Support for **OpenAI (DALL-E 3, GPT models)**, **Google Gemini**, and **Stability AI (Stable Diffusion 3, SeeDream)**
 - 🔑 **Bring Your Own API Key** - Complete control and transparency over API usage
-- ⚡ **Single & Batch Generation** - Generate images one at a time or in bulk
+- ⚡ **Single & Batch Generation** - Generate images one at a time, or bulk regenerate your entire library
 - 🎯 **Customizable Prompts** - Tailor the image generation to your brand
 - 🔒 **Secure** - API keys are encrypted before storage
 - 📏 **Flexible Dimensions** - Configure image size (default: 1024x675px)
 - ✅ **WordPress Standards** - Built following WordPress.org coding standards
+- ✨ **Bulk Regeneration** - Regenerate all featured images in one click
 
 ## Installation
 
@@ -260,6 +261,13 @@ GNU General Public License for more details.
   - [Stability AI](https://stability.ai/)
 
 ## Changelog
+
+### 1.0.2
+- Added new image generation models: GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest
+- Added SeaDream 4.5 support for Stability AI
+- Added image quality settings (Standard/HD/Low) and output format selection (PNG/JPG/WEBP)
+- Added Bulk Regeneration feature to regenerate images for all posts
+- Fixed image dimension error for custom models
 
 ### 1.0.1 (2026-01-10)
 - Added automatic featured image generation for scheduled posts
