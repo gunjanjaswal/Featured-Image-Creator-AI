@@ -19,6 +19,9 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 * **Bring Your Own API Key**: Use your own OpenAI API key for complete control and transparency
 * **Single Post Generation**: Generate featured images one at a time from the post editor
 * **Bulk Generation**: Automatically generate featured images for all posts that don't have one
+* **Bulk Regeneration**: **NEW!** Regenerate all featured images with a single click to refresh your site's look
+* **Image Quality Control**: **NEW!** Choose between Standard, HD, or Low quality generation (OpenAI)
+* **Multiple Output Formats**: **NEW!** Support for PNG, JPG, and WEBP formats (Stability AI)
 * **Customizable Prompts**: Customize the prompt template to match your brand and style
 * **Secure Storage**: API keys are encrypted before storage in your database
 * **WordPress Standards**: Built following WordPress.org coding and security standards
@@ -140,6 +143,7 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * Added image quality settings (Standard/HD/Low) and output format selection (PNG/JPG/WEBP)
 * Added Bulk Regeneration feature to regenerate images for all posts
 * Fixed image dimension error for custom models
+* Improved code quality and security (nonces, escaping)
 
 = 1.0.1 =
 * Added automatic featured image generation for scheduled posts

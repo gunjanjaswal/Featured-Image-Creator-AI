@@ -12,11 +12,13 @@ Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4)
 - 🎨 **Multiple AI Providers** - Support for **OpenAI (DALL-E 3, GPT models)**, **Google Gemini**, and **Stability AI (Stable Diffusion 3, SeeDream)**
 - 🔑 **Bring Your Own API Key** - Complete control and transparency over API usage
 - ⚡ **Single & Batch Generation** - Generate images one at a time, or bulk regenerate your entire library
+- ✨ **Bulk Regeneration** - Regenerate all featured images in one click
+- 🎚️ **Image Quality Control** - Choose between Standard, HD, or Low quality generation
+- 🖼️ **Multiple Formats** - Support for PNG, JPG, and WEBP
 - 🎯 **Customizable Prompts** - Tailor the image generation to your brand
 - 🔒 **Secure** - API keys are encrypted before storage
 - 📏 **Flexible Dimensions** - Configure image size (default: 1024x675px)
 - ✅ **WordPress Standards** - Built following WordPress.org coding standards
-- ✨ **Bulk Regeneration** - Regenerate all featured images in one click
 
 ## Installation
 
@@ -268,6 +270,7 @@ GNU General Public License for more details.
 - Added image quality settings (Standard/HD/Low) and output format selection (PNG/JPG/WEBP)
 - Added Bulk Regeneration feature to regenerate images for all posts
 - Fixed image dimension error for custom models
+- Improved code quality and security (nonces, escaping)
 
 ### 1.0.1 (2026-01-10)
 - Added automatic featured image generation for scheduled posts
