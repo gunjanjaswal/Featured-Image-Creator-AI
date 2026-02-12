@@ -205,6 +205,28 @@ class AIFIG_Image_Generator
 
         // Get output format
         $output_format = get_option('aifig_output_format', 'png');
+
+        // Convert image if needed (e.g. OpenAI returns PNG, but user wants JPG/WEBP)
+        // We do this before sideloading to ensure the file content matches the extension
+        $image_editor = wp_get_image_editor($temp_file);
+        if (!is_wp_error($image_editor)) {
+            // Generate a new temp filename with the correct extension
+            $converted_temp = wp_tempnam(sanitize_file_name($title) . '.' . $output_format);
+            
+            // Determine mime type
+            $mime_type = 'image/' . ($output_format === 'jpg' ? 'jpeg' : $output_format);
+
+            // Save converted image
+            $saved = $image_editor->save($converted_temp, $mime_type);
+
+            if (!is_wp_error($saved)) {
+                // If successful, swap temp file
+                if ($converted_temp !== $temp_file) {
+                    wp_delete_file($temp_file); // Delete old temp
+                }
+                $temp_file = $saved['path'];
+            }
+        }
         
         // Prepare file array
         $file_array = array(

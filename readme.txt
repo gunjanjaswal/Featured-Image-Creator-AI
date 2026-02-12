@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,19 +20,26 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 * **Single Post Generation**: Generate featured images one at a time from the post editor
 * **Bulk Generation**: Automatically generate featured images for all posts that don't have one
 * **Bulk Regeneration**: **NEW!** Regenerate all featured images with a single click to refresh your site's look
-* **Image Quality Control**: **NEW!** Choose between Standard, HD, or Low quality generation (OpenAI)
-* **Multiple Output Formats**: **NEW!** Support for PNG, JPG, and WEBP formats (Stability AI)
+* **Image Quality Control**: Choose between Standard, HD, or Low quality generation (OpenAI models only)
+* **Multiple Output Formats**: Support for PNG, JPG, and WEBP formats (All Providers)
 * **Customizable Prompts**: Customize the prompt template to match your brand and style
 * **Secure Storage**: API keys are encrypted before storage in your database
 * **WordPress Standards**: Built following WordPress.org coding and security standards
 * **Flexible Dimensions**: Configure image dimensions (default: 1024x675px)
 * **Scheduled Post Support**: Automatically generate featured images when scheduled posts are published
 
-= Supported AI Providers =
+= Supported AI Providers & Options =
 
-* OpenAI DALL-E 3 - High-quality image generation
-* Google Gemini (Imagen) - Google's advanced image model
-* Stability AI (Stable Diffusion 3) - Open and flexible image generation
+* **OpenAI**
+    * Models: DALL-E 3, GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest
+    * Quality: Standard, HD, Low (varies by model)
+    * Format: PNG, JPG, WEBP (Autoconverted)
+* **Stability AI**
+    * Models: Stable Diffusion 3, SeeDream 4.5
+    * Format: PNG, JPG, WEBP (Native)
+* **Google Gemini**
+    * Models: Imagen 3.0
+    * Format: PNG (Default)
 
 = How It Works =
 
@@ -136,6 +143,11 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 4. Generated featured image example
 
 == Changelog ==
+
+= 1.0.3 =
+* Enable Output Format selection (PNG/JPG/WEBP) for OpenAI models (images are automatically converted)
+* Updated documentation with full list of supported models and options
+* Improved compatibility with GPT Image 1 (Mini)
 
 = 1.0.2 =
 * Added new image generation models: GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest

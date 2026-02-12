@@ -2,7 +2,7 @@
 
 Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Supports bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.3-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -13,12 +13,20 @@ Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4)
 - 🔑 **Bring Your Own API Key** - Complete control and transparency over API usage
 - ⚡ **Single & Batch Generation** - Generate images one at a time, or bulk regenerate your entire library
 - ✨ **Bulk Regeneration** - Regenerate all featured images in one click
-- 🎚️ **Image Quality Control** - Choose between Standard, HD, or Low quality generation
-- 🖼️ **Multiple Formats** - Support for PNG, JPG, and WEBP
+- 🎚️ **Image Quality Control** - Choose between Standard, HD, or Low quality generation (OpenAI)
+- 🖼️ **Multiple Formats** - Support for PNG, JPG, and WEBP (All Providers)
 - 🎯 **Customizable Prompts** - Tailor the image generation to your brand
 - 🔒 **Secure** - API keys are encrypted before storage
 - 📏 **Flexible Dimensions** - Configure image size (default: 1024x675px)
 - ✅ **WordPress Standards** - Built following WordPress.org coding standards
+
+## Supported Models & Options
+
+| Provider | Models | Quality Options | Output Formats |
+|----------|--------|-----------------|----------------|
+| **OpenAI** | DALL-E 3, GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest | Standard, HD, Low | PNG, JPG, WEBP (Auto-converted) |
+| **Stability AI** | Stable Diffusion 3, SeeDream 4.5 | N/A | PNG, JPG, WEBP (Native) |
+| **Google Gemini** | Imagen 3.0 | N/A | PNG |
 
 ## Installation
 
@@ -263,6 +271,11 @@ GNU General Public License for more details.
   - [Stability AI](https://stability.ai/)
 
 ## Changelog
+
+### 1.0.3
+- Enable Output Format selection (PNG/JPG/WEBP) for OpenAI models (images are automatically converted)
+- Updated documentation with full list of supported models and options
+- Improved compatibility with GPT Image 1 (Mini)
 
 ### 1.0.2
 - Added new image generation models: GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest

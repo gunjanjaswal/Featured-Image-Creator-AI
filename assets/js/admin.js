@@ -383,9 +383,9 @@
 				$qualityRow.hide();
 			}
 
-			// Output Format: Only for Stability
-			// (OpenAI returns URL/PNG usually, renaming leads to issues. Stability allows format request)
-			if (isStability) {
+			// Output Format: Now for both Stability and OpenAI
+			// OpenAI defaults to PNG, but we can convert. Stability supports it natively.
+			if (isStability || isOpenAI) {
 				$formatRow.show();
 			} else {
 				$formatRow.hide();
