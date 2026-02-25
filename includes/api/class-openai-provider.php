@@ -140,6 +140,9 @@ class AIFIG_OpenAI_Provider extends AIFIG_API_Interface
             );
         } elseif (isset($data['data'][0]['b64_json'])) {
             $image_data = base64_decode($data['data'][0]['b64_json']);
+			if ( ! function_exists( 'wp_tempnam' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+}
             $temp_file = wp_tempnam();
             file_put_contents($temp_file, $image_data);
 

@@ -2,7 +2,7 @@
 
 Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Supports bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.3-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.4-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -271,6 +271,9 @@ GNU General Public License for more details.
   - [Stability AI](https://stability.ai/)
 
 ## Changelog
+
+### 1.0.4
+- Fixed fatal error by requiring file.php before calling wp_tempnam() in OpenAI provider
 
 ### 1.0.3
 - Enable Output Format selection (PNG/JPG/WEBP) for OpenAI models (images are automatically converted)
