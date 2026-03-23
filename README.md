@@ -272,6 +272,12 @@ GNU General Public License for more details.
 
 ## Changelog
 
+### 1.0.5
+- Added `draft_to_publish` and `pending_to_publish` hooks for auto-generating featured images
+- Previously only `future_to_publish` was hooked, so images were only auto-generated for WordPress scheduled (future) posts
+- Now auto-generates featured images when posts transition from draft or pending to published (e.g., via custom auto-publish systems, bulk publishing, or manual publish)
+- Enabled error logging for auto-generation to aid debugging (`AIFIG:` prefix in debug.log)
+
 ### 1.0.4
 - Fixed fatal error by requiring file.php before calling wp_tempnam() in OpenAI provider
 
