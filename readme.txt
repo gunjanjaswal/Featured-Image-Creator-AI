@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -145,6 +145,12 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.0.6 =
+* WordPress 7.0 integration:
+  * Iframed editor: documented the meta-box-only integration. The meta box renders in the parent admin chrome (not the editor iframe), so no asset changes were required.
+  * AI Client API: added `aifig_is_wp_ai_client_available()` (uses core `wp_supports_ai()` + `wp_ai_client_prompt()`) and `aifig_wp_ai_client_prompt()` helpers. Routing through the core client is opt-in via the `aifig_use_wp_ai_client` filter; bundled OpenAI / Gemini / Stability providers remain the default image-generation path.
+  * Connectors API: registers an `ai_provider` connector on the `wp_connectors_init` action so the encrypted `aifig_api_key` option surfaces on the central Connections screen alongside core's auto-discovered providers. Falls back silently on WP 6.x.
+
 = 1.0.5 =
 * Updated "Tested up to" to WordPress 7.0.
 * Replaced Buy Me a Coffee donation link with Ko-fi (https://ko-fi.com/gunjanjaswal).
@@ -185,6 +191,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.0.6 =
+WordPress 7.0 readiness: forward-compat shims for the AI Client and Connectors APIs (graceful fallback on older WP). No breaking changes.
 
 = 1.0.5 =
 Compatibility with WordPress 7.0; donation link moved to Ko-fi; Contact Developer row meta added; debug error_log calls replaced with a do_action hook.

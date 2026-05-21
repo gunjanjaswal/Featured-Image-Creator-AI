@@ -3,7 +3,7 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Requires at least: 5.8
  * Tested up to: 7.0
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('AIFIG_VERSION', '1.0.5');
+define('AIFIG_VERSION', '1.0.6');
 define('AIFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIFIG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -139,6 +139,14 @@ add_action('pending_to_publish', 'aifig_auto_generate_on_publish');
 
 /**
  * Enqueue admin scripts and styles.
+ *
+ * Iframed-editor note (WordPress 7.0):
+ * The block editor canvas runs inside an iframe in WP 7.0. This plugin
+ * integrates only via `add_meta_box()` (a sidebar panel rendered in the
+ * parent admin chrome, not the iframe). All admin JS is scoped to
+ * `post.php` / `post-new.php` / `edit.php` for the meta box button and to
+ * the plugin's own settings/bulk-generate screens. No assets are injected
+ * into the editor iframe, so the WP 7.0 transition has no functional impact.
  */
 function aifig_enqueue_admin_assets($hook)
 {
@@ -214,9 +222,128 @@ add_filter('plugin_action_links_' . AIFIG_PLUGIN_BASENAME, 'aifig_plugin_action_
 function aifig_plugin_row_meta($links, $file)
 {
 	if (AIFIG_PLUGIN_BASENAME === $file) {
+		$links[] = '<a href="https://wordpress.org/support/plugin/featured-image-creator-ai/" target="_blank">' . __('Plugin Support', 'featured-image-creator-ai') . '</a>';
 		$links[] = '<a href="mailto:hello@gunjanjaswal.me">' . __('Contact Developer', 'featured-image-creator-ai') . '</a>';
 	}
 
 	return $links;
 }
 add_filter('plugin_row_meta', 'aifig_plugin_row_meta', 10, 2);
+
+/* -------------------------------------------------------------------------
+ * WordPress 7.0 integrations: AI Client API + Connectors API
+ *
+ * WordPress 7.0 ships:
+ *   - `wp_supports_ai()` capability check.
+ *   - `wp_ai_client_prompt( $prompt )` returning a `WP_AI_Client_Prompt_Builder`.
+ *   - A Connectors API + central Connections screen. Plugins register via
+ *     the `wp_connectors_init` action, calling `$registry->register( $id, $args )`.
+ *
+ * Both touchpoints are `function_exists()`-guarded so this plugin works on
+ * WP 6.x too. The bundled OpenAI / Gemini / Stability providers remain the
+ * default image-generation path; the WP AI Client is opt-in via filter.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Indicate whether the site has the WordPress 7.0 AI Client available.
+ *
+ * Combines core's `wp_supports_ai()` capability check with a plugin-level
+ * filter `aifig_use_wp_ai_client` so site owners can disable routing through
+ * the core client even when present.
+ *
+ * @return bool
+ */
+function aifig_is_wp_ai_client_available()
+{
+	if (!function_exists('wp_supports_ai') || !function_exists('wp_ai_client_prompt')) {
+		return false;
+	}
+	if (!wp_supports_ai()) {
+		return false;
+	}
+	return (bool) apply_filters('aifig_use_wp_ai_client', true);
+}
+
+/**
+ * Build a prompt against the WordPress 7.0 AI Client, if available.
+ *
+ * Returns a `WP_AI_Client_Prompt_Builder` ready for `->generateText()` /
+ * `->generateImage()` etc., or null when the core client is not active.
+ * Callers can also pass the prompt through `aifig_ai_client_prompt` filter
+ * for last-minute mutation.
+ *
+ * @param string|null $prompt Optional initial prompt content.
+ * @return \WP_AI_Client_Prompt_Builder|null
+ */
+function aifig_wp_ai_client_prompt($prompt = null)
+{
+	if (!aifig_is_wp_ai_client_available()) {
+		return null;
+	}
+	$prompt = apply_filters('aifig_ai_client_prompt', $prompt);
+	return wp_ai_client_prompt($prompt);
+}
+
+/**
+ * Register this plugin's API key with the WordPress 7.0 Connectors API.
+ *
+ * The plugin stores a single encrypted key in `aifig_api_key` regardless of
+ * the active provider (the active provider is held in `aifig_api_provider`).
+ * One `ai_provider` connector is registered so the key surfaces on the
+ * central Connections screen alongside core's auto-discovered providers.
+ *
+ * Note: the value stored in `aifig_api_key` is encrypted by this plugin's
+ * sanitize callback. Reads from the Connections screen will see the encrypted
+ * blob, not the original key. Writes go through the same `register_setting()`
+ * sanitize callback, which re-encrypts plaintext input.
+ *
+ * @param WP_Connector_Registry $registry Core connector registry instance.
+ */
+function aifig_register_connectors($registry)
+{
+	if (!is_object($registry) || !method_exists($registry, 'register')) {
+		do_action('aifig_register_connectors', false);
+		return;
+	}
+
+	$active_provider = get_option('aifig_api_provider', 'openai');
+	$provider_labels = array(
+		'openai'    => __('OpenAI (DALL-E / GPT Image)', 'featured-image-creator-ai'),
+		'gemini'    => __('Google Gemini (Imagen)', 'featured-image-creator-ai'),
+		'stability' => __('Stability AI', 'featured-image-creator-ai'),
+	);
+	$credentials_urls = array(
+		'openai'    => 'https://platform.openai.com/api-keys',
+		'gemini'    => 'https://aistudio.google.com/app/apikey',
+		'stability' => 'https://platform.stability.ai/account/keys',
+	);
+
+	$provider_name = isset($provider_labels[$active_provider]) ? $provider_labels[$active_provider] : __('AI Provider', 'featured-image-creator-ai');
+	$credentials   = isset($credentials_urls[$active_provider]) ? $credentials_urls[$active_provider] : '';
+
+	$args = array(
+		/* translators: %s: Active AI provider name. */
+		'name'           => sprintf(__('Featured Image Creator AI — %s', 'featured-image-creator-ai'), $provider_name),
+		'description'    => __('AI image-generation provider used by Featured Image Creator AI. The key is encrypted at rest.', 'featured-image-creator-ai'),
+		'type'           => 'ai_provider',
+		'authentication' => array(
+			'method'       => 'api_key',
+			'setting_name' => 'aifig_api_key',
+		),
+		'plugin'         => array(
+			'file'      => AIFIG_PLUGIN_BASENAME,
+			'is_active' => function () {
+				return defined('AIFIG_VERSION');
+			},
+		),
+	);
+
+	if (!empty($credentials)) {
+		$args['authentication']['credentials_url'] = $credentials;
+	}
+
+	$registry->register('aifig-image-generator', $args);
+
+	do_action('aifig_register_connectors', true);
+}
+add_action('wp_connectors_init', 'aifig_register_connectors');

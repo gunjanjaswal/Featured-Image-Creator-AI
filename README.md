@@ -274,6 +274,12 @@ GNU General Public License for more details.
 
 ## Changelog
 
+### 1.0.6
+- **WordPress 7.0 integration (real APIs, tested against `D:\wamp64\www\wordpress7`):**
+  - Iframed editor: documented the meta-box-only integration. The meta box renders in the parent admin chrome (not the editor iframe), so no asset changes were required.
+  - **AI Client API:** added `aifig_is_wp_ai_client_available()` (uses core `wp_supports_ai()` + `wp_ai_client_prompt()`) and `aifig_wp_ai_client_prompt()` helpers. Routing through the core client is opt-in via the `aifig_use_wp_ai_client` filter; bundled OpenAI / Gemini / Stability providers remain the default image-generation path.
+  - **Connectors API:** registers an `ai_provider` connector on the `wp_connectors_init` action so the encrypted `aifig_api_key` option surfaces on the central Connections screen alongside core's auto-discovered providers. Connector ID: `aifig-image-generator`. Falls back silently on WP 6.x.
+
 ### 1.0.5
 - Added `draft_to_publish` and `pending_to_publish` hooks for auto-generating featured images. Previously only `future_to_publish` was hooked, so images were only auto-generated for WordPress scheduled (future) posts. Now auto-generates featured images when posts transition from draft or pending to published (e.g., via custom auto-publish systems, bulk publishing, or manual publish).
 - Replaced raw `error_log()` calls in the scheduled-publish auto-generate flow with a new `aifig_auto_generate_result` action hook so site owners can log results themselves without bundling debug code in production.
