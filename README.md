@@ -241,7 +241,9 @@ Contributions are welcome! Please:
 - **GitHub Issues**: [Report a Bug](https://github.com/gunjanjaswal/Featured-Image-Creator-AI/issues)
 - **Email**: hello@gunjanjaswal.me
 
-If you find this plugin helpful, consider [buying me a coffee](https://buymeacoffee.com/gunjanjaswal) ☕
+If you find this plugin helpful, consider [supporting on Ko-fi](https://ko-fi.com/gunjanjaswal) to back the development.
+
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/gunjanjaswal)
 
 ## License
 
@@ -273,10 +275,12 @@ GNU General Public License for more details.
 ## Changelog
 
 ### 1.0.5
-- Added `draft_to_publish` and `pending_to_publish` hooks for auto-generating featured images
-- Previously only `future_to_publish` was hooked, so images were only auto-generated for WordPress scheduled (future) posts
-- Now auto-generates featured images when posts transition from draft or pending to published (e.g., via custom auto-publish systems, bulk publishing, or manual publish)
-- Enabled error logging for auto-generation to aid debugging (`AIFIG:` prefix in debug.log)
+- Added `draft_to_publish` and `pending_to_publish` hooks for auto-generating featured images. Previously only `future_to_publish` was hooked, so images were only auto-generated for WordPress scheduled (future) posts. Now auto-generates featured images when posts transition from draft or pending to published (e.g., via custom auto-publish systems, bulk publishing, or manual publish).
+- Replaced raw `error_log()` calls in the scheduled-publish auto-generate flow with a new `aifig_auto_generate_result` action hook so site owners can log results themselves without bundling debug code in production.
+- Updated "Tested up to" to WordPress 7.0.
+- Replaced Buy Me a Coffee donation link with Ko-fi (https://ko-fi.com/gunjanjaswal).
+- Added "Contact Developer" link to plugin row meta on the Plugins screen.
+- Corrected GitHub repository slug in the Documentation row-meta link.
 
 ### 1.0.4
 - Fixed fatal error by requiring file.php before calling wp_tempnam() in OpenAI provider

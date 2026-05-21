@@ -2,11 +2,12 @@
 Contributors: gunjanjaswal
 Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Donate link: https://ko-fi.com/gunjanjaswal
 
 Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3), Google Gemini, or Stability AI. Supports bulk generation and more.
 
@@ -144,6 +145,13 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.0.5 =
+* Updated "Tested up to" to WordPress 7.0.
+* Replaced Buy Me a Coffee donation link with Ko-fi (https://ko-fi.com/gunjanjaswal).
+* Added "Contact Developer" link to plugin row meta on the Plugins screen.
+* Replaced raw error_log() calls on scheduled-publish auto-generate with a new `aifig_auto_generate_result` action hook so site owners can log results themselves.
+* Corrected GitHub repository slug in Documentation row-meta link.
+
 = 1.0.4 =
 * Fixed fatal error by requiring file.php before calling wp_tempnam() in OpenAI provider
 
@@ -177,6 +185,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+Compatibility with WordPress 7.0; donation link moved to Ko-fi; Contact Developer row meta added; debug error_log calls replaced with a do_action hook.
 
 = 1.0.0 =
 Initial release of Featured Image Creator AI.
@@ -212,7 +223,7 @@ When you use this plugin to generate images, your post titles are sent to your c
 
 For support, please visit the [plugin support forum](https://wordpress.org/support/plugin/ai-featured-image-generator/).
 
-If you find this plugin helpful, consider [buying me a coffee](https://buymeacoffee.com/gunjanjaswal) ☕
+If you find this plugin helpful, consider [supporting on Ko-fi](https://ko-fi.com/gunjanjaswal) to back the development.
 
 == Contributing ==
 

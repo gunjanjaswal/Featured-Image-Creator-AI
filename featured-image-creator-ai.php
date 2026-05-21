@@ -5,6 +5,7 @@
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
  * Version: 1.0.5
  * Requires at least: 5.8
+ * Tested up to: 7.0
  * Requires PHP: 7.4
  * Author: Gunjan Jaswal
  * Author URI: https://www.gunjanjaswal.me
@@ -123,12 +124,14 @@ function aifig_auto_generate_on_publish($post)
 	// Generate featured image
 	$result = $generator->generate_for_post($post->ID);
 
-	// Log result for debugging
-	if (is_wp_error($result)) {
-		error_log('AIFIG: Failed to auto-generate image for post ' . $post->ID . ': ' . $result->get_error_message());
-	} else {
-		error_log('AIFIG: Successfully auto-generated image for post ' . $post->ID . ' (attachment ID: ' . $result . ')');
-	}
+	/**
+	 * Fires after an auto-generation attempt on a scheduled post publish.
+	 * Hook this if you want to log the result yourself.
+	 *
+	 * @param int|WP_Error $result      Attachment ID on success, WP_Error on failure.
+	 * @param int          $post_id     ID of the post that was published.
+	 */
+	do_action('aifig_auto_generate_result', $result, $post->ID);
 }
 add_action('future_to_publish', 'aifig_auto_generate_on_publish');
 add_action('draft_to_publish', 'aifig_auto_generate_on_publish');
@@ -194,7 +197,7 @@ function aifig_plugin_action_links($links)
 {
 	$custom_links = array(
 		'settings' => '<a href="' . admin_url('options-general.php?page=aifig-settings') . '">' . __('Settings', 'featured-image-creator-ai') . '</a>',
-		'coffee' => '<a href="https://buymeacoffee.com/gunjanjaswal" target="_blank" style="color:#ff813f;font-weight:bold;">☕ ' . __('Buy me a coffee', 'featured-image-creator-ai') . '</a>',
+		'kofi' => '<a href="https://ko-fi.com/gunjanjaswal" target="_blank" style="color:#0073aa;font-weight:bold;">' . __('Support on Ko-fi', 'featured-image-creator-ai') . '</a>',
 	);
 
 	return array_merge($custom_links, $links);
@@ -211,12 +214,7 @@ add_filter('plugin_action_links_' . AIFIG_PLUGIN_BASENAME, 'aifig_plugin_action_
 function aifig_plugin_row_meta($links, $file)
 {
 	if (AIFIG_PLUGIN_BASENAME === $file) {
-		$custom_links = array(
-			'docs' => '<a href="https://github.com/gunjanjaswal/ai-featured-image-generator#readme" target="_blank">' . __('Documentation', 'featured-image-creator-ai') . '</a>',
-			'support' => '<a href="https://wordpress.org/support/plugin/ai-featured-image-generator/" target="_blank">' . __('Support', 'featured-image-creator-ai') . '</a>',
-		);
-
-		$links = array_merge($links, $custom_links);
+		$links[] = '<a href="mailto:hello@gunjanjaswal.me">' . __('Contact Developer', 'featured-image-creator-ai') . '</a>';
 	}
 
 	return $links;
