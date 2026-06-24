@@ -335,6 +335,92 @@
 	margin-bottom: 5px;
 }
 
+/* Meta box: style field + variations */
+.aifig-field {
+	margin: 12px 0 6px;
+}
+
+.aifig-field label {
+	display: block;
+	margin-bottom: 4px;
+}
+
+.aifig-style-select {
+	width: 100%;
+}
+
+.aifig-variations-launch .aifig-variations-hint {
+	display: block;
+	margin-top: 6px;
+	color: #646970;
+	font-size: 11px;
+}
+
+.aifig-variations {
+	margin-top: 15px;
+}
+
+.aifig-variations-label {
+	margin: 0 0 8px;
+}
+
+.aifig-variations-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.aifig-variation-item {
+	position: relative;
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 6px;
+	overflow: hidden;
+	cursor: pointer;
+	background: #f0f0f1;
+	line-height: 0;
+	transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.aifig-variation-item:hover {
+	border-color: #2271b1;
+	transform: translateY(-2px);
+}
+
+.aifig-variation-item.is-chosen {
+	border-color: #00a32a;
+}
+
+.aifig-variation-item img {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+.aifig-variation-item:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.aifig-variation-pick {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 5px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #fff;
+	background: rgba(34, 113, 177, 0.85);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	line-height: 1.4;
+}
+
+.aifig-variation-item:hover .aifig-variation-pick {
+	opacity: 1;
+}
+
 /* Settings Page Styles */
 .aifig-settings-section {
 	max-width: 800px;
@@ -342,6 +428,32 @@
 
 #aifig_prompt_template {
 	font-family: monospace;
+}
+
+/* Overlay settings layout */
+.aifig-overlay-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(160px, 1fr));
+	gap: 12px 20px;
+	max-width: 520px;
+	margin-top: 6px;
+}
+
+.aifig-overlay-grid label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.aifig-overlay-grid select,
+.aifig-overlay-grid input {
+	font-weight: 400;
+}
+
+.aifig-logo-picker .aifig-logo-preview {
+	margin-bottom: 8px;
 }
 
 /* Responsive */

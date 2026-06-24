@@ -16,9 +16,12 @@
 			var $metaBox = $btn.closest('.aifig-meta-box');
 			var $loading = $metaBox.find('.aifig-loading');
 			var $result = $metaBox.find('.aifig-result');
+			var style = $metaBox.find('.aifig-style-select').val() || '';
 
 			// Disable button and show loading
 			$btn.prop('disabled', true);
+			$metaBox.find('.aifig-variations').hide();
+			$loading.find('p').text(aifigData.strings.generating);
 			$loading.show();
 			$result.hide().removeClass('success error');
 
@@ -29,7 +32,8 @@
 				data: {
 					action: 'aifig_generate_single',
 					nonce: aifigData.nonce,
-					post_id: postId
+					post_id: postId,
+					style: style
 				},
 				success: function (response) {
 					if (response.success) {
@@ -69,6 +73,173 @@
 					$btn.prop('disabled', false);
 				}
 			});
+		});
+	}
+
+	/**
+	 * Variations: generate several options and pick one.
+	 */
+	function initVariations() {
+		$('.aifig-variations-btn').on('click', function (e) {
+			e.preventDefault();
+
+			var $btn = $(this);
+			var postId = $btn.data('post-id');
+			var count = $btn.data('count') || 4;
+			var $metaBox = $btn.closest('.aifig-meta-box');
+			var $loading = $metaBox.find('.aifig-loading');
+			var $variations = $metaBox.find('.aifig-variations');
+			var $grid = $metaBox.find('.aifig-variations-grid');
+			var $result = $metaBox.find('.aifig-result');
+			var style = $metaBox.find('.aifig-style-select').val() || '';
+
+			$btn.prop('disabled', true);
+			$metaBox.find('.aifig-generate-btn').prop('disabled', true);
+			$variations.hide();
+			$grid.empty();
+			$result.hide().removeClass('success error');
+			$loading.find('p').text(aifigData.strings.generatingOptions);
+			$loading.show();
+
+			$.ajax({
+				url: aifigData.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'aifig_generate_variations',
+					nonce: aifigData.nonce,
+					post_id: postId,
+					count: count,
+					style: style
+				},
+				success: function (response) {
+					if (response.success && response.data.variations && response.data.variations.length) {
+						renderVariations($metaBox, response.data.variations, postId);
+						$variations.show();
+					} else {
+						var msg = (response.data && response.data.message) ? response.data.message : aifigData.strings.variationsError;
+						$result.addClass('error').html('<p>' + msg + '</p>').show();
+					}
+				},
+				error: function () {
+					$result.addClass('error').html('<p>' + aifigData.strings.variationsError + '</p>').show();
+				},
+				complete: function () {
+					$loading.hide();
+					$btn.prop('disabled', false);
+					$metaBox.find('.aifig-generate-btn').prop('disabled', false);
+				}
+			});
+		});
+	}
+
+	function renderVariations($metaBox, variations, postId) {
+		var $grid = $metaBox.find('.aifig-variations-grid');
+		var allIds = variations.map(function (v) { return v.attachment_id; });
+		$grid.empty();
+
+		variations.forEach(function (v) {
+			var $item = $('<button type="button" class="aifig-variation-item"></button>');
+			$item.attr('data-id', v.attachment_id);
+			$item.append($('<img>').attr('src', v.thumb).attr('alt', ''));
+			$item.append('<span class="aifig-variation-pick">' + aifigData.strings.useThisOne + '</span>');
+			$item.on('click', function () {
+				pickVariation($metaBox, postId, v.attachment_id, allIds);
+			});
+			$grid.append($item);
+		});
+	}
+
+	function pickVariation($metaBox, postId, chosenId, allIds) {
+		var discard = allIds.filter(function (id) { return id !== chosenId; });
+		var $loading = $metaBox.find('.aifig-loading');
+		var $variations = $metaBox.find('.aifig-variations');
+		var $result = $metaBox.find('.aifig-result');
+
+		$variations.find('.aifig-variation-item').prop('disabled', true).removeClass('is-chosen');
+		$variations.find('.aifig-variation-item[data-id="' + chosenId + '"]').addClass('is-chosen');
+		$loading.find('p').text(aifigData.strings.settingImage);
+		$loading.show();
+
+		$.ajax({
+			url: aifigData.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'aifig_set_variation',
+				nonce: aifigData.nonce,
+				post_id: postId,
+				attachment_id: chosenId,
+				discard_ids: discard
+			},
+			success: function (response) {
+				if (response.success) {
+					$variations.hide();
+					$result
+						.addClass('success')
+						.html('<p><strong>' + response.data.message + '</strong></p>' +
+							'<img src="' + response.data.image_url + '" alt="">')
+						.show();
+
+					$('#postimagediv').load(window.location.href + ' #postimagediv > *');
+
+					$metaBox.find('.aifig-status').replaceWith(
+						'<p class="aifig-status">' +
+						'<span class="dashicons dashicons-yes-alt"></span>' +
+						aifigData.strings.success +
+						'</p>'
+					);
+				} else {
+					$result.addClass('error').html('<p>' + response.data.message + '</p>').show();
+					$variations.find('.aifig-variation-item').prop('disabled', false);
+				}
+			},
+			error: function () {
+				$result.addClass('error').html('<p>' + aifigData.strings.error + '</p>').show();
+				$variations.find('.aifig-variation-item').prop('disabled', false);
+			},
+			complete: function () {
+				$loading.hide();
+			}
+		});
+	}
+
+	/**
+	 * Logo picker on the settings page (text & logo overlay).
+	 */
+	function initLogoPicker() {
+		var frame;
+
+		$('.aifig-logo-select').on('click', function (e) {
+			e.preventDefault();
+
+			if (frame) {
+				frame.open();
+				return;
+			}
+
+			frame = wp.media({
+				title: aifigData.strings.selectLogo,
+				button: { text: aifigData.strings.useThisOne },
+				multiple: false,
+				library: { type: 'image' }
+			});
+
+			frame.on('select', function () {
+				var att = frame.state().get('selection').first().toJSON();
+				var url = (att.sizes && att.sizes.medium) ? att.sizes.medium.url : att.url;
+				$('#aifig_overlay_logo_id').val(att.id);
+				$('.aifig-logo-preview img').attr('src', url);
+				$('.aifig-logo-preview').show();
+				$('.aifig-logo-remove').show();
+			});
+
+			frame.open();
+		});
+
+		$('.aifig-logo-remove').on('click', function (e) {
+			e.preventDefault();
+			$('#aifig_overlay_logo_id').val(0);
+			$('.aifig-logo-preview').hide();
+			$(this).hide();
 		});
 	}
 
@@ -404,9 +575,11 @@
 	 */
 	$(document).ready(function () {
 		initSingleGeneration();
+		initVariations();
 		initBatchGeneration();
 		initTabSwitching();
 		initManualUpload();
+		initLogoPicker();
 		initSettingsPage();
 	});
 

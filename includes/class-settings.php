@@ -130,6 +130,179 @@ class AIFIG_Settings
             )
         );
 
+        // --- AI enhancements ---
+        register_setting(
+            'aifig_settings_group',
+            'aifig_style_preset',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array('AIFIG_Styles', 'sanitize'),
+                'default' => 'none',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_variations_count',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => array($this, 'sanitize_variations_count'),
+                'default' => 4,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_alt_text_enabled',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 0,
+            )
+        );
+
+        // --- Text & logo overlay ---
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_enabled',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 0,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_text',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default' => '{title}',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_font_weight',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_font_weight'),
+                'default' => 'bold',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_font_scale',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => array($this, 'sanitize_scale'),
+                'default' => 7,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_max_lines',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => array($this, 'sanitize_max_lines'),
+                'default' => 3,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_text_color',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_hex'),
+                'default' => '#ffffff',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_position',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_position'),
+                'default' => 'bottom',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_scrim',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_scrim'),
+                'default' => 'gradient',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_logo_id',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => 'absint',
+                'default' => 0,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_logo_position',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_corner'),
+                'default' => 'top-right',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_overlay_logo_scale',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => array($this, 'sanitize_scale'),
+                'default' => 14,
+            )
+        );
+
+        // --- Social / Open Graph variants ---
+        register_setting(
+            'aifig_settings_group',
+            'aifig_social_enabled',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 0,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_social_types',
+            array(
+                'type' => 'array',
+                'sanitize_callback' => array($this, 'sanitize_social_types'),
+                'default' => array('og', 'square'),
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_social_set_og',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 1,
+            )
+        );
+
         // Add settings sections
         add_settings_section(
             'aifig_api_section',
@@ -193,6 +366,231 @@ class AIFIG_Settings
             'aifig-settings',
             'aifig_image_section'
         );
+
+        // --- AI Enhancements section ---
+        add_settings_section(
+            'aifig_enhance_section',
+            __('AI Enhancements', 'featured-image-creator-ai'),
+            array($this, 'render_enhance_section'),
+            'aifig-settings'
+        );
+
+        add_settings_field(
+            'aifig_style_preset',
+            __('Default Style', 'featured-image-creator-ai'),
+            array($this, 'render_style_preset_field'),
+            'aifig-settings',
+            'aifig_enhance_section'
+        );
+
+        add_settings_field(
+            'aifig_variations_count',
+            __('Variations', 'featured-image-creator-ai'),
+            array($this, 'render_variations_count_field'),
+            'aifig-settings',
+            'aifig_enhance_section'
+        );
+
+        add_settings_field(
+            'aifig_alt_text_enabled',
+            __('Auto Alt Text', 'featured-image-creator-ai'),
+            array($this, 'render_alt_text_field'),
+            'aifig-settings',
+            'aifig_enhance_section'
+        );
+
+        // --- Text & Logo Overlay section ---
+        add_settings_section(
+            'aifig_overlay_section',
+            __('Text & Logo Overlay', 'featured-image-creator-ai'),
+            array($this, 'render_overlay_section'),
+            'aifig-settings'
+        );
+
+        add_settings_field(
+            'aifig_overlay_enabled',
+            __('Enable Overlay', 'featured-image-creator-ai'),
+            array($this, 'render_overlay_enabled_field'),
+            'aifig-settings',
+            'aifig_overlay_section'
+        );
+
+        add_settings_field(
+            'aifig_overlay_text',
+            __('Headline Text', 'featured-image-creator-ai'),
+            array($this, 'render_overlay_text_field'),
+            'aifig-settings',
+            'aifig_overlay_section'
+        );
+
+        add_settings_field(
+            'aifig_overlay_style',
+            __('Text Style', 'featured-image-creator-ai'),
+            array($this, 'render_overlay_text_style_field'),
+            'aifig-settings',
+            'aifig_overlay_section'
+        );
+
+        add_settings_field(
+            'aifig_overlay_logo',
+            __('Logo / Watermark', 'featured-image-creator-ai'),
+            array($this, 'render_overlay_logo_field'),
+            'aifig-settings',
+            'aifig_overlay_section'
+        );
+
+        // --- Social & Open Graph Images section ---
+        add_settings_section(
+            'aifig_social_section',
+            __('Social & Open Graph Images', 'featured-image-creator-ai'),
+            array($this, 'render_social_section'),
+            'aifig-settings'
+        );
+
+        add_settings_field(
+            'aifig_social_enabled',
+            __('Enable Social Images', 'featured-image-creator-ai'),
+            array($this, 'render_social_enabled_field'),
+            'aifig-settings',
+            'aifig_social_section'
+        );
+
+        add_settings_field(
+            'aifig_social_types',
+            __('Sizes to Create', 'featured-image-creator-ai'),
+            array($this, 'render_social_types_field'),
+            'aifig-settings',
+            'aifig_social_section'
+        );
+
+        add_settings_field(
+            'aifig_social_set_og',
+            __('Open Graph Image', 'featured-image-creator-ai'),
+            array($this, 'render_social_set_og_field'),
+            'aifig-settings',
+            'aifig_social_section'
+        );
+    }
+
+    /**
+     * Sanitize the selected social variant types to known keys.
+     *
+     * @param mixed $value Raw value (array of keys).
+     * @return array
+     */
+    public function sanitize_social_types($value)
+    {
+        $valid = array_keys(AIFIG_Social_Variants::get_specs());
+        if (!is_array($value)) {
+            return array();
+        }
+        $value = array_map('sanitize_text_field', $value);
+        return array_values(array_intersect($valid, $value));
+    }
+
+    /**
+     * Sanitize a checkbox value to 1 or 0.
+     *
+     * @param mixed $value Raw value.
+     * @return int
+     */
+    public function sanitize_checkbox($value)
+    {
+        return !empty($value) ? 1 : 0;
+    }
+
+    /**
+     * Sanitize the variations count (1-8).
+     *
+     * @param mixed $value Raw value.
+     * @return int
+     */
+    public function sanitize_variations_count($value)
+    {
+        return max(1, min(8, absint($value)));
+    }
+
+    /**
+     * Sanitize a percentage scale (2-40).
+     *
+     * @param mixed $value Raw value.
+     * @return int
+     */
+    public function sanitize_scale($value)
+    {
+        return max(2, min(40, absint($value)));
+    }
+
+    /**
+     * Sanitize max lines (1-6).
+     *
+     * @param mixed $value Raw value.
+     * @return int
+     */
+    public function sanitize_max_lines($value)
+    {
+        return max(1, min(6, absint($value)));
+    }
+
+    /**
+     * Sanitize a hex color, falling back to white.
+     *
+     * @param mixed $value Raw value.
+     * @return string
+     */
+    public function sanitize_hex($value)
+    {
+        $color = sanitize_hex_color($value);
+        return $color ? $color : '#ffffff';
+    }
+
+    /**
+     * Sanitize the font weight option.
+     *
+     * @param mixed $value Raw value.
+     * @return string
+     */
+    public function sanitize_font_weight($value)
+    {
+        $value = sanitize_text_field($value);
+        return in_array($value, array('bold', 'semibold', 'regular'), true) ? $value : 'bold';
+    }
+
+    /**
+     * Sanitize the vertical text position option.
+     *
+     * @param mixed $value Raw value.
+     * @return string
+     */
+    public function sanitize_position($value)
+    {
+        $value = sanitize_text_field($value);
+        return in_array($value, array('top', 'middle', 'bottom'), true) ? $value : 'bottom';
+    }
+
+    /**
+     * Sanitize the scrim option.
+     *
+     * @param mixed $value Raw value.
+     * @return string
+     */
+    public function sanitize_scrim($value)
+    {
+        $value = sanitize_text_field($value);
+        return in_array($value, array('none', 'dark', 'light', 'gradient'), true) ? $value : 'gradient';
+    }
+
+    /**
+     * Sanitize a corner position option.
+     *
+     * @param mixed $value Raw value.
+     * @return string
+     */
+    public function sanitize_corner($value)
+    {
+        $value = sanitize_text_field($value);
+        $valid = array('top-left', 'top-right', 'bottom-left', 'bottom-right');
+        return in_array($value, $valid, true) ? $value : 'top-right';
     }
 
     /**
@@ -395,6 +793,281 @@ class AIFIG_Settings
     }
 
     /**
+     * Render AI enhancements section description.
+     */
+    public function render_enhance_section()
+    {
+        echo '<p>' . esc_html__('Optional AI features applied when generating images.', 'featured-image-creator-ai') . '</p>';
+    }
+
+    /**
+     * Render the default style preset field.
+     */
+    public function render_style_preset_field()
+    {
+        $current = get_option('aifig_style_preset', 'none');
+        ?>
+        <select name="aifig_style_preset" id="aifig_style_preset">
+            <?php foreach (AIFIG_Styles::get_presets() as $key => $preset): ?>
+                <option value="<?php echo esc_attr($key); ?>" <?php selected($current, $key); ?>>
+                    <?php echo esc_html($preset['label']); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <p class="description">
+            <?php esc_html_e('Visual style appended to every prompt. Can be overridden per post in the editor.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the variations count field.
+     */
+    public function render_variations_count_field()
+    {
+        $count = max(1, absint(get_option('aifig_variations_count', 4)));
+        ?>
+        <select name="aifig_variations_count" id="aifig_variations_count">
+            <?php foreach (array(2, 3, 4, 6, 8) as $n): ?>
+                <option value="<?php echo esc_attr($n); ?>" <?php selected($count, $n); ?>>
+                    <?php
+                    /* translators: %d: number of images */
+                    printf(esc_html__('%d images', 'featured-image-creator-ai'), absint($n));
+                    ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <p class="description">
+            <?php esc_html_e('How many options the "Generate Options" button creates. Each image uses one API credit.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the auto alt-text toggle.
+     */
+    public function render_alt_text_field()
+    {
+        $enabled = (bool) get_option('aifig_alt_text_enabled', false);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_alt_text_enabled" value="0" />
+            <input type="checkbox" name="aifig_alt_text_enabled" value="1" <?php checked($enabled); ?> />
+            <?php esc_html_e('Automatically write alt text for generated images', 'featured-image-creator-ai'); ?>
+        </label>
+        <p class="description">
+            <?php esc_html_e('Uses the provider\'s vision model (OpenAI / Gemini) to describe the image for SEO and accessibility. Falls back to the post title for providers without vision.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render overlay section description (with engine availability notice).
+     */
+    public function render_overlay_section()
+    {
+        echo '<p>' . esc_html__('Burn a headline and/or logo directly onto the generated image.', 'featured-image-creator-ai') . '</p>';
+
+        if (!AIFIG_Image_Overlay::is_available()) {
+            echo '<div class="notice notice-warning inline" style="margin:10px 0;padding:8px 12px;"><p>'
+                . esc_html__('Overlay needs the Imagick or GD PHP extension, which is not available on this server. Ask your host to enable one.', 'featured-image-creator-ai')
+                . '</p></div>';
+        }
+    }
+
+    /**
+     * Render the overlay enable toggle.
+     */
+    public function render_overlay_enabled_field()
+    {
+        $enabled = (bool) get_option('aifig_overlay_enabled', false);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_overlay_enabled" value="0" />
+            <input type="checkbox" name="aifig_overlay_enabled" id="aifig_overlay_enabled" value="1" <?php checked($enabled); ?> />
+            <?php esc_html_e('Add a text/logo overlay to generated images', 'featured-image-creator-ai'); ?>
+        </label>
+        <?php
+    }
+
+    /**
+     * Render the overlay headline text field.
+     */
+    public function render_overlay_text_field()
+    {
+        $text = get_option('aifig_overlay_text', '{title}');
+        ?>
+        <input type="text" name="aifig_overlay_text" id="aifig_overlay_text" class="regular-text"
+            value="<?php echo esc_attr($text); ?>" />
+        <p class="description">
+            <?php esc_html_e('Text drawn on the image. Use {title} for the post title. Leave blank for logo-only.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the combined overlay text-style controls.
+     */
+    public function render_overlay_text_style_field()
+    {
+        $weight   = get_option('aifig_overlay_font_weight', 'bold');
+        $scale    = absint(get_option('aifig_overlay_font_scale', 7));
+        $lines    = absint(get_option('aifig_overlay_max_lines', 3));
+        $color    = get_option('aifig_overlay_text_color', '#ffffff');
+        $position = get_option('aifig_overlay_position', 'bottom');
+        $scrim    = get_option('aifig_overlay_scrim', 'gradient');
+
+        $weights   = array('bold' => __('Bold', 'featured-image-creator-ai'), 'semibold' => __('Semibold', 'featured-image-creator-ai'), 'regular' => __('Regular', 'featured-image-creator-ai'));
+        $positions = array('top' => __('Top', 'featured-image-creator-ai'), 'middle' => __('Middle', 'featured-image-creator-ai'), 'bottom' => __('Bottom', 'featured-image-creator-ai'));
+        $scrims    = array('gradient' => __('Gradient fade', 'featured-image-creator-ai'), 'dark' => __('Dark box', 'featured-image-creator-ai'), 'light' => __('Light box', 'featured-image-creator-ai'), 'none' => __('None', 'featured-image-creator-ai'));
+        ?>
+        <fieldset class="aifig-overlay-grid">
+            <label><?php esc_html_e('Font', 'featured-image-creator-ai'); ?>
+                <select name="aifig_overlay_font_weight">
+                    <?php foreach ($weights as $k => $label): ?>
+                        <option value="<?php echo esc_attr($k); ?>" <?php selected($weight, $k); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label><?php esc_html_e('Position', 'featured-image-creator-ai'); ?>
+                <select name="aifig_overlay_position">
+                    <?php foreach ($positions as $k => $label): ?>
+                        <option value="<?php echo esc_attr($k); ?>" <?php selected($position, $k); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label><?php esc_html_e('Background', 'featured-image-creator-ai'); ?>
+                <select name="aifig_overlay_scrim">
+                    <?php foreach ($scrims as $k => $label): ?>
+                        <option value="<?php echo esc_attr($k); ?>" <?php selected($scrim, $k); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label><?php esc_html_e('Color', 'featured-image-creator-ai'); ?>
+                <input type="color" name="aifig_overlay_text_color" value="<?php echo esc_attr($color); ?>" />
+            </label>
+            <label><?php esc_html_e('Font size (% of width)', 'featured-image-creator-ai'); ?>
+                <input type="number" name="aifig_overlay_font_scale" min="2" max="40" value="<?php echo esc_attr($scale); ?>" class="small-text" />
+            </label>
+            <label><?php esc_html_e('Max lines', 'featured-image-creator-ai'); ?>
+                <input type="number" name="aifig_overlay_max_lines" min="1" max="6" value="<?php echo esc_attr($lines); ?>" class="small-text" />
+            </label>
+        </fieldset>
+        <?php
+    }
+
+    /**
+     * Render the logo picker, position and scale.
+     */
+    public function render_overlay_logo_field()
+    {
+        $logo_id  = absint(get_option('aifig_overlay_logo_id', 0));
+        $logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'medium') : '';
+        $position = get_option('aifig_overlay_logo_position', 'top-right');
+        $scale    = absint(get_option('aifig_overlay_logo_scale', 14));
+
+        $corners = array(
+            'top-left'     => __('Top left', 'featured-image-creator-ai'),
+            'top-right'    => __('Top right', 'featured-image-creator-ai'),
+            'bottom-left'  => __('Bottom left', 'featured-image-creator-ai'),
+            'bottom-right' => __('Bottom right', 'featured-image-creator-ai'),
+        );
+        ?>
+        <div class="aifig-logo-picker">
+            <input type="hidden" name="aifig_overlay_logo_id" id="aifig_overlay_logo_id" value="<?php echo esc_attr($logo_id); ?>" />
+            <div class="aifig-logo-preview" style="<?php echo $logo_url ? '' : 'display:none;'; ?>">
+                <img src="<?php echo esc_url($logo_url); ?>" alt="" style="max-width:160px;height:auto;border:1px solid #dcdcde;border-radius:4px;padding:4px;background:#f6f7f7;" />
+            </div>
+            <p>
+                <button type="button" class="button aifig-logo-select"><?php esc_html_e('Select Logo', 'featured-image-creator-ai'); ?></button>
+                <button type="button" class="button-link aifig-logo-remove" style="<?php echo $logo_url ? '' : 'display:none;'; ?>color:#b32d2e;">
+                    <?php esc_html_e('Remove', 'featured-image-creator-ai'); ?>
+                </button>
+            </p>
+            <p class="description"><?php esc_html_e('A transparent PNG works best. Leave empty for text-only.', 'featured-image-creator-ai'); ?></p>
+            <fieldset class="aifig-overlay-grid">
+                <label><?php esc_html_e('Logo position', 'featured-image-creator-ai'); ?>
+                    <select name="aifig_overlay_logo_position">
+                        <?php foreach ($corners as $k => $label): ?>
+                            <option value="<?php echo esc_attr($k); ?>" <?php selected($position, $k); ?>><?php echo esc_html($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label><?php esc_html_e('Logo size (% of width)', 'featured-image-creator-ai'); ?>
+                    <input type="number" name="aifig_overlay_logo_scale" min="2" max="40" value="<?php echo esc_attr($scale); ?>" class="small-text" />
+                </label>
+            </fieldset>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the social section description.
+     */
+    public function render_social_section()
+    {
+        echo '<p>' . esc_html__('Create extra platform-sized images (Open Graph, Twitter, square, Pinterest) from each generated image. This is a local crop/resize — it does not use additional API credits.', 'featured-image-creator-ai') . '</p>';
+    }
+
+    /**
+     * Render the social enable toggle.
+     */
+    public function render_social_enabled_field()
+    {
+        $enabled = (bool) get_option('aifig_social_enabled', false);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_social_enabled" value="0" />
+            <input type="checkbox" name="aifig_social_enabled" value="1" <?php checked($enabled); ?> />
+            <?php esc_html_e('Generate social media image sizes alongside the featured image', 'featured-image-creator-ai'); ?>
+        </label>
+        <?php
+    }
+
+    /**
+     * Render the social sizes checkboxes.
+     */
+    public function render_social_types_field()
+    {
+        $selected = get_option('aifig_social_types', array('og', 'square'));
+        if (!is_array($selected)) {
+            $selected = array();
+        }
+        ?>
+        <fieldset>
+            <?php foreach (AIFIG_Social_Variants::get_specs() as $key => $spec): ?>
+                <label style="display:block;margin-bottom:6px;">
+                    <input type="checkbox" name="aifig_social_types[]" value="<?php echo esc_attr($key); ?>"
+                        <?php checked(in_array($key, $selected, true)); ?> />
+                    <?php echo esc_html($spec['label']); ?>
+                </label>
+            <?php endforeach; ?>
+        </fieldset>
+        <p class="description">
+            <?php esc_html_e('Images are saved to the media library and attached to the post.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the Open Graph image toggle.
+     */
+    public function render_social_set_og_field()
+    {
+        $enabled = (bool) get_option('aifig_social_set_og', true);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_social_set_og" value="0" />
+            <input type="checkbox" name="aifig_social_set_og" value="1" <?php checked($enabled); ?> />
+            <?php esc_html_e('Use the Open Graph size as the post\'s social share image', 'featured-image-creator-ai'); ?>
+        </label>
+        <p class="description">
+            <?php esc_html_e('Sets the image for Yoast SEO and Rank Math when present, and outputs og:image / twitter:image tags otherwise. Requires the "Open Graph" size above.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
      * Render settings page.
      */
     public function render_settings_page()
@@ -440,6 +1113,42 @@ class AIFIG_Settings
                     box.
                 </p>
             </div>
+
+            <?php $this->render_how_to(); ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the "How to use" help panel.
+     */
+    public function render_how_to()
+    {
+        ?>
+        <div class="aifig-howto" style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px 28px;margin-top:30px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h2 style="margin-top:0;font-size:20px;">📖 <?php esc_html_e('How to use', 'featured-image-creator-ai'); ?></h2>
+
+            <h3 style="margin-bottom:6px;"><?php esc_html_e('Getting started', 'featured-image-creator-ai'); ?></h3>
+            <ol style="margin-top:0;">
+                <li><?php esc_html_e('Choose your AI provider above and paste your API key, then Save.', 'featured-image-creator-ai'); ?></li>
+                <li><?php esc_html_e('Edit any post and find the "Featured Image Creator AI" box in the sidebar.', 'featured-image-creator-ai'); ?></li>
+                <li><?php esc_html_e('Click "Generate Featured Image" — or "Generate Options" to compare several and pick one.', 'featured-image-creator-ai'); ?></li>
+            </ol>
+
+            <h3 style="margin-bottom:6px;">🖌️ <?php esc_html_e('Styles', 'featured-image-creator-ai'); ?></h3>
+            <p style="margin-top:0;"><?php esc_html_e('Pick a default look under "AI Enhancements" above. You can override it per post from the Style dropdown in the editor — no prompt writing needed.', 'featured-image-creator-ai'); ?></p>
+
+            <h3 style="margin-bottom:6px;">🏷️ <?php esc_html_e('Text & logo overlay', 'featured-image-creator-ai'); ?></h3>
+            <p style="margin-top:0;"><?php esc_html_e('Enable "Text & Logo Overlay" to burn the post title (and your logo) onto every image. The {title} placeholder is replaced automatically. Rendering happens on your server — no extra API cost.', 'featured-image-creator-ai'); ?></p>
+
+            <h3 style="margin-bottom:6px;">🔀 <?php esc_html_e('Variations', 'featured-image-creator-ai'); ?></h3>
+            <p style="margin-top:0;"><?php esc_html_e('"Generate Options" creates several images at once so you can pick your favorite. The ones you don\'t choose are deleted automatically. Each option uses one API credit.', 'featured-image-creator-ai'); ?></p>
+
+            <h3 style="margin-bottom:6px;">♿ <?php esc_html_e('Auto alt text', 'featured-image-creator-ai'); ?></h3>
+            <p style="margin-top:0;"><?php esc_html_e('Turn on "Auto Alt Text" to have OpenAI or Gemini describe each image for SEO and accessibility. Stability AI falls back to the post title.', 'featured-image-creator-ai'); ?></p>
+
+            <h3 style="margin-bottom:6px;">📣 <?php esc_html_e('Social & Open Graph images', 'featured-image-creator-ai'); ?></h3>
+            <p style="margin-top:0;margin-bottom:0;"><?php esc_html_e('Enable "Social & Open Graph Images" to also create Facebook, Twitter, square and Pinterest sizes from the same picture — cropped locally, no extra credits. With "Open Graph Image" on, the share image is set for Yoast / Rank Math automatically, or output as og:image tags when no SEO plugin is active.', 'featured-image-creator-ai'); ?></p>
         </div>
         <?php
     }

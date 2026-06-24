@@ -58,4 +58,100 @@ abstract class AIFIG_API_Interface
      * @return string Provider name.
      */
     abstract public function get_provider_name();
+
+    /**
+     * Whether this provider can describe an image (vision) for alt text.
+     *
+     * Providers that support vision override this and describe_image().
+     *
+     * @return bool
+     */
+    public function supports_vision()
+    {
+        return false;
+    }
+
+    /**
+     * Describe an image for accessible alt text.
+     *
+     * Default implementation signals no vision support; vision-capable
+     * providers override this to return a short description string.
+     *
+     * @param string $file_path Absolute path to a local image file.
+     * @param string $context   Optional grounding hint (e.g. the post title).
+     * @return string|WP_Error Alt text on success, WP_Error otherwise.
+     */
+    public function describe_image($file_path, $context = '')
+    {
+        return new WP_Error(
+            'vision_unsupported',
+            __('This provider does not support image description.', 'featured-image-creator-ai')
+        );
+    }
+
+    /**
+     * Build the shared prompt used to request alt text from a vision model.
+     *
+     * @param string $context Optional grounding hint.
+     * @return string
+     */
+    protected function build_alt_text_prompt($context = '')
+    {
+        $prompt = 'Write concise, descriptive alt text for this image for accessibility and SEO. '
+            . 'Describe what is visually shown in one sentence under 125 characters. '
+            . 'Do not start with "Image of" or "A picture of". Return only the alt text, no quotes.';
+
+        $context = trim((string) $context);
+        if ('' !== $context) {
+            $prompt .= ' For context, this is the featured image for an article titled: "' . $context . '".';
+        }
+
+        return $prompt;
+    }
+
+    /**
+     * Normalize a raw model response into clean alt text.
+     *
+     * @param string $text Raw text.
+     * @return string
+     */
+    protected function clean_alt_text($text)
+    {
+        $text = wp_strip_all_tags((string) $text);
+        $text = trim($text);
+        // Strip surrounding quotes the model sometimes adds.
+        $text = trim($text, "\"'“”‘’ \t\n");
+        // Collapse whitespace.
+        $text = preg_replace('/\s+/', ' ', $text);
+        // Keep it to a sensible alt-text length.
+        if (function_exists('mb_substr') && mb_strlen($text) > 160) {
+            $text = rtrim(mb_substr($text, 0, 157)) . '…';
+        } elseif (strlen($text) > 160) {
+            $text = rtrim(substr($text, 0, 157)) . '…';
+        }
+        return $text;
+    }
+
+    /**
+     * Guess an image mime type from a file path.
+     *
+     * @param string $file_path File path.
+     * @return string
+     */
+    protected function guess_mime($file_path)
+    {
+        $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+        switch ($ext) {
+            case 'jpg':
+            case 'jpeg':
+                return 'image/jpeg';
+            case 'webp':
+                return 'image/webp';
+            case 'gif':
+                return 'image/gif';
+            case 'png':
+            default:
+                return 'image/png';
+        }
+    }
 }

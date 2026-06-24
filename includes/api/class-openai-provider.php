@@ -163,6 +163,95 @@ class AIFIG_OpenAI_Provider extends AIFIG_API_Interface
     }
 
     /**
+     * Whether this provider supports vision (alt-text description).
+     *
+     * @return bool
+     */
+    public function supports_vision()
+    {
+        return true;
+    }
+
+    /**
+     * Describe an image using an OpenAI vision-capable chat model.
+     *
+     * @param string $file_path Local image path.
+     * @param string $context   Optional grounding hint.
+     * @return string|WP_Error
+     */
+    public function describe_image($file_path, $context = '')
+    {
+        if (!file_exists($file_path)) {
+            return new WP_Error('missing_file', __('Image file not found for description.', 'featured-image-creator-ai'));
+        }
+
+        $bytes = file_get_contents($file_path);
+        if (false === $bytes) {
+            return new WP_Error('read_failed', __('Could not read image for description.', 'featured-image-creator-ai'));
+        }
+
+        $data_uri = 'data:' . $this->guess_mime($file_path) . ';base64,' . base64_encode($bytes);
+
+        /** This filter allows overriding the vision model used for alt text. */
+        $vision_model = apply_filters('aifig_openai_vision_model', 'gpt-4o-mini');
+
+        $body = array(
+            'model'      => $vision_model,
+            'max_tokens' => 120,
+            'messages'   => array(
+                array(
+                    'role'    => 'user',
+                    'content' => array(
+                        array(
+                            'type' => 'text',
+                            'text' => $this->build_alt_text_prompt($context),
+                        ),
+                        array(
+                            'type'      => 'image_url',
+                            'image_url' => array('url' => $data_uri),
+                        ),
+                    ),
+                ),
+            ),
+        );
+
+        $response = wp_remote_post(
+            'https://api.openai.com/v1/chat/completions',
+            array(
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $this->api_key,
+                    'Content-Type'  => 'application/json',
+                ),
+                'body'    => wp_json_encode($body),
+                'timeout' => 45,
+            )
+        );
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = wp_remote_retrieve_response_code($response);
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+
+        if (200 !== $code) {
+            $message = isset($data['error']['message']) ? $data['error']['message'] : __('Unknown error', 'featured-image-creator-ai');
+            return new WP_Error('vision_error', $message);
+        }
+
+        if (!isset($data['choices'][0]['message']['content'])) {
+            return new WP_Error('vision_invalid', __('No description returned.', 'featured-image-creator-ai'));
+        }
+
+        $alt = $this->clean_alt_text($data['choices'][0]['message']['content']);
+        if ('' === $alt) {
+            return new WP_Error('vision_empty', __('Empty description returned.', 'featured-image-creator-ai'));
+        }
+
+        return $alt;
+    }
+
+    /**
      * Validate API key.
      *
      * @return bool|WP_Error True if valid, WP_Error on failure.

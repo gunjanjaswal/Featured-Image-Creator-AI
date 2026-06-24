@@ -1,0 +1,14 @@
+# Claude Code
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Dependencies / build
+/vendor/
+/node_modules/

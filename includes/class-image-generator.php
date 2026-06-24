@@ -93,12 +93,41 @@ class AIFIG_Image_Generator
     }
 
     /**
-     * Generate featured image for a post.
+     * Generate a featured image for a post and set it as the thumbnail.
      *
-     * @param int $post_id Post ID.
+     * @param int   $post_id Post ID.
+     * @param array $args    Optional overrides: 'style' (preset key).
      * @return int|WP_Error Attachment ID on success, WP_Error on failure.
      */
-    public function generate_for_post($post_id)
+    public function generate_for_post($post_id, $args = array())
+    {
+        $attachment_id = $this->create_attachment_for_post($post_id, $args);
+
+        if (is_wp_error($attachment_id)) {
+            return $attachment_id;
+        }
+
+        // Set as featured image.
+        set_post_thumbnail($post_id, $attachment_id);
+
+        // Generate accessible alt text (best effort, respects setting).
+        $this->maybe_generate_alt_text($attachment_id, $post_id);
+
+        // Create social / Open Graph variants from this image (respects setting).
+        $this->maybe_generate_social_variants($attachment_id, $post_id);
+
+        return $attachment_id;
+    }
+
+    /**
+     * Generate an image and create a media attachment, WITHOUT setting it as
+     * the post thumbnail. Used by both single generation and variations.
+     *
+     * @param int   $post_id Post ID.
+     * @param array $args    Optional overrides: 'style' (preset key).
+     * @return int|WP_Error Attachment ID on success, WP_Error on failure.
+     */
+    public function create_attachment_for_post($post_id, $args = array())
     {
         if (!$this->is_configured()) {
             return new WP_Error(
@@ -115,7 +144,7 @@ class AIFIG_Image_Generator
             );
         }
 
-        // Get post title
+        // Get post title.
         $title = get_the_title($post_id);
         if (empty($title)) {
             return new WP_Error(
@@ -124,31 +153,29 @@ class AIFIG_Image_Generator
             );
         }
 
-        // Build prompt from template
-        $prompt = $this->build_prompt($title);
+        // Build prompt from template, applying the chosen style preset.
+        $style  = isset($args['style']) ? $args['style'] : null;
+        $prompt = $this->build_prompt($title, $style);
 
-        // Get image dimensions
-        $width = get_option('aifig_image_width', 1024);
+        // Get image dimensions.
+        $width  = get_option('aifig_image_width', 1024);
         $height = get_option('aifig_image_height', 675);
 
-        // Generate image
+        // Generate image.
         $result = $this->api_provider->generate_image($prompt, $width, $height);
 
         if (is_wp_error($result)) {
             return $result;
         }
 
-        // Download and attach image
+        // Download and attach image (also converts, resizes and applies overlay).
         $attachment_id = $this->download_and_attach($result['url'], $post_id, $title);
 
         if (is_wp_error($attachment_id)) {
             return $attachment_id;
         }
 
-        // Set as featured image
-        set_post_thumbnail($post_id, $attachment_id);
-
-        // Store metadata
+        // Store metadata.
         update_post_meta($attachment_id, '_aifig_generated', true);
         update_post_meta($attachment_id, '_aifig_prompt', $prompt);
         if (isset($result['revised_prompt'])) {
@@ -159,15 +186,158 @@ class AIFIG_Image_Generator
     }
 
     /**
-     * Build prompt from template and post title.
+     * Generate multiple candidate images for a post (no thumbnail set).
      *
-     * @param string $title Post title.
+     * @param int   $post_id Post ID.
+     * @param int   $count   Number of variations (1-8).
+     * @param array $args    Optional overrides: 'style' (preset key).
+     * @return array|WP_Error Array of attachment IDs, or WP_Error if all failed.
+     */
+    public function generate_variations($post_id, $count = 4, $args = array())
+    {
+        $count = max(1, min(8, (int) $count));
+        $ids   = array();
+        $last_error = null;
+
+        for ($i = 0; $i < $count; $i++) {
+            $id = $this->create_attachment_for_post($post_id, $args);
+            if (is_wp_error($id)) {
+                $last_error = $id;
+                continue;
+            }
+            $ids[] = $id;
+        }
+
+        if (empty($ids)) {
+            return $last_error instanceof WP_Error
+                ? $last_error
+                : new WP_Error('variations_failed', __('No variations could be generated.', 'featured-image-creator-ai'));
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Choose one variation as the featured image and discard the rest.
+     *
+     * Only plugin-generated attachments are deleted, as a safety guard.
+     *
+     * @param int   $post_id     Post ID.
+     * @param int   $chosen_id   Attachment ID to keep and feature.
+     * @param int[] $discard_ids Candidate attachment IDs to remove.
+     * @return int|WP_Error The chosen attachment ID, or WP_Error.
+     */
+    public function set_variation($post_id, $chosen_id, $discard_ids = array())
+    {
+        $chosen_id = absint($chosen_id);
+
+        if (!$chosen_id || 'attachment' !== get_post_type($chosen_id)) {
+            return new WP_Error('invalid_attachment', __('Invalid image selection.', 'featured-image-creator-ai'));
+        }
+
+        set_post_thumbnail($post_id, $chosen_id);
+
+        foreach ((array) $discard_ids as $discard_id) {
+            $discard_id = absint($discard_id);
+            if (!$discard_id || $discard_id === $chosen_id) {
+                continue;
+            }
+            // Only delete images this plugin generated.
+            if (get_post_meta($discard_id, '_aifig_generated', true)) {
+                wp_delete_attachment($discard_id, true);
+            }
+        }
+
+        $this->maybe_generate_alt_text($chosen_id, $post_id);
+        $this->maybe_generate_social_variants($chosen_id, $post_id);
+
+        return $chosen_id;
+    }
+
+    /**
+     * Generate and store accessible alt text for an attachment, if enabled.
+     *
+     * Uses the provider's vision model when available, otherwise falls back
+     * to the post title.
+     *
+     * @param int $attachment_id Attachment ID.
+     * @param int $post_id       Source post ID (for context/fallback).
+     * @return void
+     */
+    public function maybe_generate_alt_text($attachment_id, $post_id)
+    {
+        if (!get_option('aifig_alt_text_enabled', false)) {
+            return;
+        }
+        if (!$this->is_configured()) {
+            return;
+        }
+
+        $title = get_the_title($post_id);
+        $alt   = '';
+
+        if ($this->api_provider->supports_vision()) {
+            $file = get_attached_file($attachment_id);
+            if ($file && file_exists($file)) {
+                $described = $this->api_provider->describe_image($file, $title);
+                if (!is_wp_error($described) && '' !== $described) {
+                    $alt = $described;
+                }
+            }
+        }
+
+        // Fallback: use the post title.
+        if ('' === $alt) {
+            $alt = $title;
+        }
+
+        $alt = sanitize_text_field($alt);
+        if ('' !== $alt) {
+            update_post_meta($attachment_id, '_wp_attachment_image_alt', $alt);
+        }
+    }
+
+    /**
+     * Create social / Open Graph sized variants from a source image, if enabled.
+     *
+     * This is a local crop/resize operation and makes no API calls.
+     *
+     * @param int $source_id Source (featured) attachment ID.
+     * @param int $post_id   Post ID.
+     * @return void
+     */
+    private function maybe_generate_social_variants($source_id, $post_id)
+    {
+        if (!class_exists('AIFIG_Social_Variants') || !AIFIG_Social_Variants::is_enabled()) {
+            return;
+        }
+        AIFIG_Social_Variants::generate_for_attachment($source_id, $post_id);
+    }
+
+    /**
+     * Build prompt from template and post title, applying a style preset.
+     *
+     * @param string      $title Post title.
+     * @param string|null $style Style preset key, or null to use the saved setting.
      * @return string Generated prompt.
      */
-    private function build_prompt($title)
+    private function build_prompt($title, $style = null)
     {
         $template = get_option('aifig_prompt_template', 'Create a professional blog featured image for: {title}');
-        return str_replace('{title}', $title, $template);
+        $prompt   = str_replace('{title}', $title, $template);
+
+        if (null === $style) {
+            $style = get_option('aifig_style_preset', 'none');
+        }
+
+        if ('none' !== $style && class_exists('AIFIG_Styles')) {
+            $suffix = AIFIG_Styles::get_suffix($style);
+            if ('' !== $suffix) {
+                $prompt = rtrim($prompt) . ' Style: ' . $suffix;
+            }
+        }
+
+        return $prompt;
     }
 
     /**
@@ -258,7 +428,44 @@ class AIFIG_Image_Generator
         // Resize image to exact dimensions if needed
         $this->resize_image($attachment_id);
 
+        // Burn text / logo overlay onto the image if enabled.
+        $this->maybe_apply_overlay($attachment_id, $post_id);
+
         return $attachment_id;
+    }
+
+    /**
+     * Apply the text/logo overlay to a generated attachment, if enabled.
+     *
+     * @param int $attachment_id Attachment ID.
+     * @param int $post_id       Source post ID (for {title} substitution).
+     * @return void
+     */
+    private function maybe_apply_overlay($attachment_id, $post_id)
+    {
+        if (!get_option('aifig_overlay_enabled', false)) {
+            return;
+        }
+        if (!class_exists('AIFIG_Image_Overlay') || !AIFIG_Image_Overlay::is_available()) {
+            return;
+        }
+
+        $file = get_attached_file($attachment_id);
+        if (!$file || !file_exists($file)) {
+            return;
+        }
+
+        // Resolve the overlay text (supports the {title} placeholder).
+        $text_source = get_option('aifig_overlay_text', '{title}');
+        $text        = str_replace('{title}', get_the_title($post_id), $text_source);
+
+        $changed = AIFIG_Image_Overlay::apply($file, array('text' => $text));
+
+        if ($changed) {
+            // Pixels changed; refresh attachment metadata (e.g. filesize).
+            $metadata = wp_generate_attachment_metadata($attachment_id, $file);
+            wp_update_attachment_metadata($attachment_id, $metadata);
+        }
     }
 
     /**

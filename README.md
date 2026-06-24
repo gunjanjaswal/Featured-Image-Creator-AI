@@ -1,8 +1,8 @@
 # Featured Image Creator AI
 
-Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Supports bulk generation, scheduling, and multiple formats.
+Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Style presets, text/logo overlays, image variations, auto alt text, social/Open Graph sizes, bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.4-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -10,9 +10,13 @@ Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4)
 ## Features
 
 - 🎨 **Multiple AI Providers** - Support for **OpenAI (DALL-E 3, GPT models)**, **Google Gemini**, and **Stability AI (Stable Diffusion 3, SeeDream)**
+- 🖌️ **Style Presets** *(new in 1.1.0)* - One-click looks: Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro
+- 🏷️ **Text & Logo Overlay** *(new in 1.1.0)* - Burn an auto-wrapped headline and/or logo/watermark onto the image (Imagick/GD + bundled Poppins font)
+- 🔀 **Image Variations** *(new in 1.1.0)* - Generate several options and pick your favorite from a grid; unchosen images are auto-removed
+- ♿ **Auto Alt Text** *(new in 1.1.0)* - Describe the generated image with the provider's vision model for SEO + accessibility (title fallback)
+- 📣 **Social & Open Graph Images** *(new in 1.2.0)* - Create Facebook/OG (1200×630), Twitter, square and Pinterest sizes from one image (local crop, no extra API cost); auto-sets the OG image for Yoast / Rank Math
 - 🔑 **Bring Your Own API Key** - Complete control and transparency over API usage
 - ⚡ **Single & Batch Generation** - Generate images one at a time, or bulk regenerate your entire library
-- ✨ **Bulk Regeneration** - Regenerate all featured images in one click
 - 🎚️ **Image Quality Control** - Choose between Standard, HD, or Low quality generation (OpenAI)
 - 🖼️ **Multiple Formats** - Support for PNG, JPG, and WEBP (All Providers)
 - 🎯 **Customizable Prompts** - Tailor the image generation to your brand
@@ -27,6 +31,8 @@ Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4)
 | **OpenAI** | DALL-E 3, GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest | Standard, HD, Low | PNG, JPG, WEBP (Auto-converted) |
 | **Stability AI** | Stable Diffusion 3, SeeDream 4.5 | N/A | PNG, JPG, WEBP (Native) |
 | **Google Gemini** | Imagen 3.0 | N/A | PNG |
+
+> **Auto Alt Text** uses a vision model where available — OpenAI (`gpt-4o-mini`) and Gemini describe the image; Stability AI falls back to the post title.
 
 ## Installation
 
@@ -88,6 +94,26 @@ cp -r . /path/to/wordpress/wp-content/plugins/featured-image-creator-ai/
 3. Click **Generate All Featured Images**
 4. Monitor the progress as images are generated
 
+### Styles
+
+Set a default look under **Settings > AI Enhancements** (Photographic, Flat Illustration, Watercolor, Cyberpunk, and more). Override it per image from the **Style** dropdown in the post editor — no prompt engineering needed.
+
+### Text & Logo Overlay
+
+Enable **Settings > Text & Logo Overlay** to burn the post title (and your logo) onto every image. Configure font weight, size, color, vertical position, a readability scrim, and a logo/watermark corner. Use `{title}` in the headline text for the post title. Rendering is local (Imagick or GD) — no extra API cost.
+
+### Variations
+
+In the post editor, click **Generate Options** to create several images at once and pick your favorite from the grid. Unchosen images are removed automatically. The number of options (2–8) is set under **Settings > AI Enhancements**. Each option uses one API credit.
+
+### Auto Alt Text
+
+Enable **Settings > AI Enhancements > Auto Alt Text** to describe each generated image with the provider's vision model (OpenAI `gpt-4o-mini` / Gemini) and save it as the image's alt text. Stability AI falls back to the post title.
+
+### Social & Open Graph Images
+
+Enable **Settings > Social & Open Graph Images** and tick the sizes you want (Open Graph 1200×630, Twitter, square, Pinterest). Each generated image is cropped locally into those sizes and added to the media library — no extra API credits. With **Open Graph Image** enabled, the share image is set for Yoast SEO / Rank Math, or output as `og:image` / `twitter:image` tags when no SEO plugin is active.
+
 ## API Costs
 
 This plugin supports multiple AI providers. Pricing varies:
@@ -113,6 +139,7 @@ The plugin uses standard quality by default for all providers.
 - PHP 7.4 or higher
 - API key from your chosen provider (OpenAI, Google Gemini, or Stability AI)
 - `openssl` PHP extension (for API key encryption)
+- `imagick` **or** `gd` PHP extension (only needed for the optional Text & Logo Overlay)
 
 ## File Structure
 
@@ -122,20 +149,29 @@ ai-featured-image-generator/
 ├── includes/
 │   ├── class-admin-notices.php      # Admin notification system
 │   ├── class-bulk-generator.php     # Batch processing
-│   ├── class-image-generator.php    # Core image generation
+│   ├── class-image-generator.php    # Core image generation + variations + alt text
+│   ├── class-image-overlay.php      # Text/logo overlay engine (Imagick/GD)
+│   ├── class-social-variants.php    # Social / Open Graph sized variants
+│   ├── class-styles.php             # Visual style presets
+│   ├── class-whats-new.php          # "What's New" on-update notice
 │   ├── class-post-meta-box.php      # Post editor integration
 │   ├── class-security.php           # Security utilities
 │   ├── class-settings.php           # Settings page
 │   └── api/
-│       ├── class-api-interface.php     # API provider interface
-│       ├── class-openai-provider.php   # OpenAI DALL-E 3
-│       ├── class-gemini-provider.php   # Google Gemini (Imagen)
+│       ├── class-api-interface.php     # API provider interface (+ vision contract)
+│       ├── class-openai-provider.php   # OpenAI DALL-E 3 / GPT Image / vision
+│       ├── class-gemini-provider.php   # Google Gemini (Imagen) / vision
 │       └── class-stability-provider.php # Stability AI (SD3)
 ├── assets/
 │   ├── css/
 │   │   └── admin.css                # Admin styles
-│   └── js/
-│       └── admin.js                 # Admin JavaScript
+│   ├── js/
+│   │   └── admin.js                 # Admin JavaScript
+│   └── fonts/
+│       ├── Poppins-Bold.ttf         # Bundled overlay fonts (SIL OFL)
+│       ├── Poppins-SemiBold.ttf
+│       ├── Poppins-Regular.ttf
+│       └── OFL.txt                  # Font license
 ├── readme.txt                        # WordPress.org readme
 └── README.md                         # This file
 ```
@@ -154,6 +190,27 @@ add_filter('aifig_image_prompt', function($prompt, $post_id) {
 // Modify image dimensions
 add_filter('aifig_image_dimensions', function($dimensions) {
     return array('width' => 1200, 'height' => 800);
+});
+
+// --- Added in 1.1.0 ---
+
+// Add or change style presets (key => ['label' => ..., 'suffix' => ...])
+add_filter('aifig_style_presets', function($presets) {
+    $presets['my_brand'] = array(
+        'label'  => 'My Brand Look',
+        'suffix' => 'Bold brand colors, clean layout, on-brand illustration style.',
+    );
+    return $presets;
+});
+
+// Choose the vision models used for Auto Alt Text
+add_filter('aifig_openai_vision_model', fn() => 'gpt-4o-mini');
+add_filter('aifig_gemini_vision_model', fn() => 'gemini-2.0-flash');
+
+// Add or change social / Open Graph sizes (key => ['label', 'width', 'height'])
+add_filter('aifig_social_variants', function($specs) {
+    $specs['story'] = array('label' => 'Story (1080×1920)', 'width' => 1080, 'height' => 1920);
+    return $specs;
 });
 ```
 

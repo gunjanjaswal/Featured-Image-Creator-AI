@@ -4,12 +4,12 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
 
-Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3), Google Gemini, or Stability AI. Supports bulk generation and more.
+Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3), Google Gemini, or Stability AI. Style presets, text/logo overlays, variations, auto alt text and social/Open Graph sizes.
 
 == Description ==
 
@@ -17,10 +17,15 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 
 = Features =
 
+* **Style Presets**: **NEW!** One-click looks — Photographic, Flat Illustration, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut and more. No prompt-writing needed.
+* **Text & Logo Overlay**: **NEW!** Burn the post title and/or your logo straight onto the image — auto-wrapped headline, font weight, color, position, readability scrim, and corner watermark. Bundled Poppins font; uses Imagick or GD.
+* **Image Variations**: **NEW!** Generate several options at once and pick your favorite from a grid. The unchosen images are cleaned up automatically.
+* **Auto Alt Text**: **NEW!** Writes accessible, SEO-friendly alt text by actually describing the generated image with the provider's vision model (OpenAI / Gemini), with a title-based fallback.
+* **Social & Open Graph Images**: **NEW!** Create Facebook/Open Graph (1200×630), Twitter, square and Pinterest sizes from the same generated image — cropped locally with no extra API cost. Optionally sets the Open Graph share image for Yoast SEO / Rank Math, or outputs og:image tags itself.
 * **Bring Your Own API Key**: Use your own OpenAI API key for complete control and transparency
 * **Single Post Generation**: Generate featured images one at a time from the post editor
 * **Bulk Generation**: Automatically generate featured images for all posts that don't have one
-* **Bulk Regeneration**: **NEW!** Regenerate all featured images with a single click to refresh your site's look
+* **Bulk Regeneration**: Regenerate all featured images with a single click to refresh your site's look
 * **Image Quality Control**: Choose between Standard, HD, or Low quality generation (OpenAI models only)
 * **Multiple Output Formats**: Support for PNG, JPG, and WEBP formats (All Providers)
 * **Customizable Prompts**: Customize the prompt template to match your brand and style
@@ -50,6 +55,18 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 4. Customize the prompt template (optional)
 5. Generate images from the post editor or use bulk generation
 
+= Using the Creative Features =
+
+**Styles** — Under *Settings > AI Enhancements*, pick a default look (Photographic, Flat Illustration, Watercolor, Cyberpunk, and more). In the post editor, the Style dropdown lets you override it for a single image. No prompt writing required.
+
+**Text & Logo Overlay** — Enable it under *Settings > Text & Logo Overlay*. The post title is drawn on the image by default (use the {title} placeholder), and you can set the font weight, size, color, position, background scrim, and add a logo/watermark in any corner. Rendering happens on your server with Imagick or GD, so it costs nothing extra.
+
+**Variations** — In the post editor, click *Generate Options* to create several images at once, then click your favorite to set it. The other options are deleted automatically. The number of options is set under *Settings > AI Enhancements* (2–8). Each option uses one API credit.
+
+**Auto Alt Text** — Turn it on under *Settings > AI Enhancements*. After an image is set, OpenAI or Gemini describes it and saves the text as the image's alt attribute for SEO and accessibility. Stability AI falls back to the post title.
+
+**Social & Open Graph Images** — Enable it under *Settings > Social & Open Graph Images* and tick the sizes you want (Open Graph 1200×630, Twitter, square, Pinterest). Each generated image is cropped locally into those sizes and saved to the media library — no extra API credits. With *Open Graph Image* enabled, the share image is set for Yoast SEO / Rank Math, or output as og:image / twitter:image tags when no SEO plugin is active.
+
 = Use Cases =
 
 * Bloggers who need featured images for every post
@@ -60,9 +77,12 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 = Privacy & Data =
 
 This plugin uses external AI services to generate images. When you generate an image:
-* Your post title is sent to the AI provider (OpenAI)
+* Your post title (built into the prompt) is sent to the AI provider
 * The AI provider generates an image based on your prompt
 * The image is downloaded and stored in your WordPress media library
+* If **Auto Alt Text** is enabled, the generated image is additionally sent to the provider's vision model (OpenAI / Gemini) to produce a description. This is off by default.
+* The text and logo overlay is rendered locally on your server — no image data leaves your site for that step
+* Social / Open Graph sizes are cropped locally from the generated image — no image data leaves your site for that step
 * No other data is sent to external services
 
 Your API key is encrypted and stored securely in your WordPress database.
@@ -124,6 +144,26 @@ The plugin will display an error message explaining what went wrong. Common issu
 
 Yes! Go to Featured Image Creator AI > Settings and adjust the width and height settings.
 
+= How do I put the post title text on the image? =
+
+Enable **Text & Logo Overlay** in Settings. The post title is drawn on the image by default (you can change the text, font weight, color, position and background scrim, and add a logo/watermark). Rendering uses the Imagick or GD PHP extension and a bundled Poppins font — no extra service required.
+
+= What are "Variations"? =
+
+In the post editor, click **Generate Options** to create several images at once, then pick your favorite from a grid. The images you don't choose are removed automatically to keep your media library clean. Each option uses one API credit, so 4 options cost 4 generations.
+
+= Does Auto Alt Text cost extra? =
+
+It makes one additional API call per image to the provider's vision model (OpenAI or Gemini) to describe the picture. It is disabled by default. Providers without vision (e.g. Stability AI) fall back to using the post title as the alt text at no extra cost.
+
+= How do I get a Facebook / Twitter / Pinterest sized image? =
+
+Enable **Social & Open Graph Images** in Settings and tick the sizes you want. Each time an image is generated, the plugin crops it locally into those sizes and saves them to your media library. This uses no extra API credits because it reuses the image you already generated.
+
+= Does this set my Open Graph (social share) image automatically? =
+
+If you enable the **Open Graph Image** option, the plugin sets the share image for Yoast SEO and Rank Math automatically. If neither plugin is active, it outputs `og:image` and `twitter:image` tags itself. This requires the "Open Graph" size to be enabled.
+
 = Is my API key secure? =
 
 Yes, your API key is encrypted using WordPress security keys before being stored in the database.
@@ -144,6 +184,19 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 4. Generated featured image example
 
 == Changelog ==
+
+= 1.2.0 =
+* **New: Social & Open Graph Images.** Generate Facebook/Open Graph (1200×630), Twitter/X, square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter.
+* **New: "How to use" guide** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
+* **New: "What's New" panel** shown once after updating the plugin, summarizing the latest features. It is dismissible per user and never appears on a fresh install.
+* Variants are cleaned up and regenerated whenever the featured image changes, so stale sizes are not left behind.
+
+= 1.1.0 =
+* **New: Style Presets.** Pick a ready-made look (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per post — no prompt engineering required. Extendable via the `aifig_style_presets` filter.
+* **New: Text & Logo Overlay.** Burn an auto-wrapped headline (the post title by default) and/or a logo/watermark directly onto generated images. Configurable font weight, size, color, vertical position, readability scrim (gradient/dark/light) and logo corner + size. Renders locally with Imagick or GD using a bundled Poppins (SIL OFL) font.
+* **New: Image Variations.** Generate multiple options at once from the editor and choose your favorite from a grid; unchosen images are deleted automatically. Count is configurable (2–8).
+* **New: Auto Alt Text.** Optionally describe each generated image with the provider's vision model (OpenAI `gpt-4o-mini` / Gemini) and save it as the attachment alt text for SEO and accessibility. Falls back to the post title for providers without vision. Models are filterable (`aifig_openai_vision_model`, `aifig_gemini_vision_model`).
+* Refactored the generator into reusable attachment/variation/alt-text steps; all generation paths (single, bulk, scheduled auto-publish) share the new style and overlay handling.
 
 = 1.0.6 =
 * WordPress 7.0 integration:
@@ -191,6 +244,12 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Adds Social & Open Graph image sizes generated from one image (no extra API cost) and an in-dashboard "How to use" guide. All new features are opt-in.
+
+= 1.1.0 =
+Big creative update: style presets, text/logo overlays, multi-image variations, and auto alt text. All new features are opt-in and default off, so existing behavior is unchanged.
 
 = 1.0.6 =
 WordPress 7.0 readiness: forward-compat shims for the AI Client and Connectors APIs (graceful fallback on older WP). No breaking changes.

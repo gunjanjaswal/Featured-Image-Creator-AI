@@ -3,7 +3,7 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.0.6
+ * Version: 1.2.0
  * Requires at least: 5.8
  * Tested up to: 7.0
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('AIFIG_VERSION', '1.0.6');
+define('AIFIG_VERSION', '1.2.0');
 define('AIFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIFIG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -39,6 +39,33 @@ function aifig_activate()
 	add_option('aifig_prompt_template', 'Create a professional blog featured image for: {title}');
 	add_option('aifig_image_width', 1024);
 	add_option('aifig_image_height', 675);
+
+	// AI enhancements (1.1.0).
+	add_option('aifig_style_preset', 'none');
+	add_option('aifig_variations_count', 4);
+	add_option('aifig_alt_text_enabled', 0);
+
+	// Text & logo overlay (1.1.0).
+	add_option('aifig_overlay_enabled', 0);
+	add_option('aifig_overlay_text', '{title}');
+	add_option('aifig_overlay_font_weight', 'bold');
+	add_option('aifig_overlay_font_scale', 7);
+	add_option('aifig_overlay_max_lines', 3);
+	add_option('aifig_overlay_text_color', '#ffffff');
+	add_option('aifig_overlay_position', 'bottom');
+	add_option('aifig_overlay_scrim', 'gradient');
+	add_option('aifig_overlay_logo_id', 0);
+	add_option('aifig_overlay_logo_position', 'top-right');
+	add_option('aifig_overlay_logo_scale', 14);
+
+	// Social / Open Graph variants (1.2.0).
+	add_option('aifig_social_enabled', 0);
+	add_option('aifig_social_types', array('og', 'square'));
+	add_option('aifig_social_set_og', 1);
+
+	// Record the installed version so the "What's New" panel only appears on a
+	// genuine update, not on a fresh install.
+	update_option('aifig_version', AIFIG_VERSION);
 
 	// Flush rewrite rules
 	flush_rewrite_rules();
@@ -94,9 +121,16 @@ function aifig_init()
 		new AIFIG_Admin_Notices();
 		new AIFIG_Post_Meta_Box();
 		new AIFIG_Bulk_Generator();
+		new AIFIG_Whats_New();
 	}
 }
 add_action('init', 'aifig_init');
+
+/**
+ * Output fallback Open Graph / Twitter image tags on the front end when no
+ * dedicated SEO plugin is handling them. Guarded inside the class.
+ */
+add_action('wp_head', array('AIFIG_Social_Variants', 'maybe_output_og_tags'), 5);
 
 /**
  * Auto-generate featured image when scheduled post is published.
@@ -160,6 +194,10 @@ function aifig_enqueue_admin_assets($hook)
 		return;
 	}
 
+	// Media frame is needed for manual upload (post screens) and the logo
+	// picker (settings page).
+	wp_enqueue_media();
+
 	wp_enqueue_style(
 		'aifig-admin-css',
 		AIFIG_PLUGIN_URL . 'assets/css/admin.css',
@@ -189,6 +227,11 @@ function aifig_enqueue_admin_assets($hook)
 				'confirmBatch' => __('This will generate featured images for all posts without one. Continue?', 'featured-image-creator-ai'),
 				'batchProgress' => __('Processing: {current} of {total}', 'featured-image-creator-ai'),
 				'batchComplete' => __('Batch generation complete!', 'featured-image-creator-ai'),
+				'generatingOptions' => __('Generating options...', 'featured-image-creator-ai'),
+				'settingImage' => __('Setting featured image...', 'featured-image-creator-ai'),
+				'useThisOne' => __('Use this one', 'featured-image-creator-ai'),
+				'variationsError' => __('Could not generate options. Please try again.', 'featured-image-creator-ai'),
+				'selectLogo' => __('Select Logo / Watermark', 'featured-image-creator-ai'),
 			),
 		)
 	);
