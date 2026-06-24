@@ -9,7 +9,7 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
 
-Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3), Google Gemini, or Stability AI. Style presets, text/logo overlays, variations, auto alt text and social/Open Graph sizes.
+Auto-generate AI featured images with OpenAI, Gemini or Stability AI: styles, text/logo overlays, variations, auto alt text and social sizes.
 
 == Description ==
 
