@@ -2,7 +2,7 @@
 
 Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Style presets, text/logo overlays, image variations, auto alt text, social/Open Graph sizes, bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -14,7 +14,7 @@ Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4)
 - 🏷️ **Text & Logo Overlay** *(new in 1.1.0)* - Burn an auto-wrapped headline and/or logo/watermark onto the image (Imagick/GD + bundled Poppins font)
 - 🔀 **Image Variations** *(new in 1.1.0)* - Generate several options and pick your favorite from a grid; unchosen images are auto-removed
 - ♿ **Auto Alt Text** *(new in 1.1.0)* - Describe the generated image with the provider's vision model for SEO + accessibility (title fallback)
-- 📣 **Social & Open Graph Images** *(new in 1.2.0)* - Create Facebook/OG (1200×630), Twitter, square and Pinterest sizes from one image (local crop, no extra API cost); auto-sets the OG image for Yoast / Rank Math
+- 📣 **Social & Open Graph Images** *(new in 1.1.0)* - Create Facebook/OG (1200×630), Twitter, square and Pinterest sizes from one image (local crop, no extra API cost); auto-sets the OG image for Yoast / Rank Math
 - 🔑 **Bring Your Own API Key** - Complete control and transparency over API usage
 - ⚡ **Single & Batch Generation** - Generate images one at a time, or bulk regenerate your entire library
 - 🎚️ **Image Quality Control** - Choose between Standard, HD, or Low quality generation (OpenAI)
@@ -331,18 +331,15 @@ GNU General Public License for more details.
 
 ## Changelog
 
-### 1.2.0
-- **Social & Open Graph images:** generate Facebook/Open Graph (1200×630), Twitter/X (1200×675), square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter. New `AIFIG_Social_Variants` class.
-- **"What's New" panel:** shown once after the plugin is updated, summarizing the latest features. Dismissible per user and never shown on a fresh install. New `AIFIG_Whats_New` class.
-- **"How to use" guide:** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
-- Social variants are cleaned up and regenerated whenever the featured image changes, so stale sizes are never left behind.
-
 ### 1.1.0
 - **Style presets:** one-click looks (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per-post override. Extendable via the `aifig_style_presets` filter. New `AIFIG_Styles` class.
 - **Text & logo overlay:** burn an auto-wrapped headline (the post title by default) and/or a logo/watermark onto generated images — configurable font weight, size, color, position, readability scrim and logo corner. Rendered locally with Imagick or GD using a bundled Poppins (SIL OFL) font. New `AIFIG_Image_Overlay` class.
 - **Image variations:** generate multiple options at once from the editor and pick a favorite from a grid; unchosen images are deleted automatically. Count is configurable (2–8).
 - **Auto alt text:** optionally describe each generated image with the provider's vision model (OpenAI `gpt-4o-mini` / Gemini) and save it as the attachment alt text, with a post-title fallback for providers without vision. Models are filterable (`aifig_openai_vision_model`, `aifig_gemini_vision_model`).
-- Refactored the generator into reusable attachment/variation/alt-text steps shared by the single, bulk and scheduled-publish paths.
+- **Social & Open Graph images:** generate Facebook/Open Graph (1200×630), Twitter/X (1200×675), square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter. New `AIFIG_Social_Variants` class.
+- **"How to use" guide:** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
+- **"What's New" panel:** shown once after the plugin is updated, summarizing the latest features. Dismissible per user and never shown on a fresh install. New `AIFIG_Whats_New` class.
+- Refactored the generator into reusable attachment/variation/alt-text steps shared by the single, bulk and scheduled-publish paths. Social variants are cleaned up and regenerated whenever the featured image changes.
 
 ### 1.0.6
 - **WordPress 7.0 integration (real APIs, tested against `D:\wamp64\www\wordpress7`):**

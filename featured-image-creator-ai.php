@@ -3,7 +3,7 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.2.0
+ * Version: 1.1.0
  * Requires at least: 5.8
  * Tested up to: 7.0
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('AIFIG_VERSION', '1.2.0');
+define('AIFIG_VERSION', '1.1.0');
 define('AIFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIFIG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -58,7 +58,7 @@ function aifig_activate()
 	add_option('aifig_overlay_logo_position', 'top-right');
 	add_option('aifig_overlay_logo_scale', 14);
 
-	// Social / Open Graph variants (1.2.0).
+	// Social / Open Graph variants (1.1.0).
 	add_option('aifig_social_enabled', 0);
 	add_option('aifig_social_types', array('og', 'square'));
 	add_option('aifig_social_set_og', 1);

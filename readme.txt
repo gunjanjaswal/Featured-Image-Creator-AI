@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,18 +185,15 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
-= 1.2.0 =
-* **New: Social & Open Graph Images.** Generate Facebook/Open Graph (1200×630), Twitter/X, square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter.
-* **New: "How to use" guide** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
-* **New: "What's New" panel** shown once after updating the plugin, summarizing the latest features. It is dismissible per user and never appears on a fresh install.
-* Variants are cleaned up and regenerated whenever the featured image changes, so stale sizes are not left behind.
-
 = 1.1.0 =
 * **New: Style Presets.** Pick a ready-made look (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per post — no prompt engineering required. Extendable via the `aifig_style_presets` filter.
 * **New: Text & Logo Overlay.** Burn an auto-wrapped headline (the post title by default) and/or a logo/watermark directly onto generated images. Configurable font weight, size, color, vertical position, readability scrim (gradient/dark/light) and logo corner + size. Renders locally with Imagick or GD using a bundled Poppins (SIL OFL) font.
 * **New: Image Variations.** Generate multiple options at once from the editor and choose your favorite from a grid; unchosen images are deleted automatically. Count is configurable (2–8).
 * **New: Auto Alt Text.** Optionally describe each generated image with the provider's vision model (OpenAI `gpt-4o-mini` / Gemini) and save it as the attachment alt text for SEO and accessibility. Falls back to the post title for providers without vision. Models are filterable (`aifig_openai_vision_model`, `aifig_gemini_vision_model`).
-* Refactored the generator into reusable attachment/variation/alt-text steps; all generation paths (single, bulk, scheduled auto-publish) share the new style and overlay handling.
+* **New: Social & Open Graph Images.** Generate Facebook/Open Graph (1200×630), Twitter/X, square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter.
+* **New: "How to use" guide** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
+* **New: "What's New" panel** shown once after updating the plugin, summarizing the latest features. It is dismissible per user and never appears on a fresh install.
+* Refactored the generator into reusable attachment/variation/alt-text steps; all generation paths (single, bulk, scheduled auto-publish) share the new style, overlay and social handling. Social variants are cleaned up and regenerated whenever the featured image changes.
 
 = 1.0.6 =
 * WordPress 7.0 integration:
@@ -245,11 +242,8 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Upgrade Notice ==
 
-= 1.2.0 =
-Adds Social & Open Graph image sizes generated from one image (no extra API cost) and an in-dashboard "How to use" guide. All new features are opt-in.
-
 = 1.1.0 =
-Big creative update: style presets, text/logo overlays, multi-image variations, and auto alt text. All new features are opt-in and default off, so existing behavior is unchanged.
+Big creative update: style presets, text/logo overlays, multi-image variations, auto alt text, and social/Open Graph image sizes (generated locally from one image, no extra API cost). All new features are opt-in and default off, so existing behavior is unchanged.
 
 = 1.0.6 =
 WordPress 7.0 readiness: forward-compat shims for the AI Client and Connectors APIs (graceful fallback on older WP). No breaking changes.
