@@ -77,12 +77,7 @@ class AIFIG_OpenAI_Provider extends AIFIG_API_Interface
         // We'll use 1024x1024 and crop/resize as needed
         $size = $this->get_closest_size($width, $height);
 
-        $quality = $this->quality;
-        
-        // DALL-E 3 specific constraints
-        if ($this->model === 'dall-e-3' && $quality === 'low') {
-             $quality = 'standard'; // Fallback for DALL-E 3
-        }
+        $quality = $this->normalize_quality($this->quality);
 
         $body = array(
             'model' => $this->model,
@@ -292,6 +287,43 @@ class AIFIG_OpenAI_Provider extends AIFIG_API_Interface
      * @param int $height Desired height.
      * @return string Size string (e.g., '1024x1024').
      */
+    /**
+     * Normalize the configured quality to a value the target model accepts.
+     *
+     * DALL-E 3 accepts: standard, hd.
+     * GPT Image models accept: low, medium, high, auto.
+     *
+     * @param string $quality Configured quality setting.
+     * @return string Quality value valid for the current model.
+     */
+    private function normalize_quality($quality)
+    {
+        if ('dall-e-3' === $this->model) {
+            $map = array(
+                'standard' => 'standard',
+                'hd'       => 'hd',
+                'high'     => 'hd',
+                'low'      => 'standard',
+                'medium'   => 'standard',
+                'auto'     => 'standard',
+            );
+
+            return isset($map[$quality]) ? $map[$quality] : 'standard';
+        }
+
+        // GPT Image models.
+        $map = array(
+            'low'      => 'low',
+            'medium'   => 'medium',
+            'high'     => 'high',
+            'auto'     => 'auto',
+            'standard' => 'medium',
+            'hd'       => 'high',
+        );
+
+        return isset($map[$quality]) ? $map[$quality] : 'auto';
+    }
+
     private function get_closest_size($width, $height)
     {
         // Default supported sizes (DALL-E 3)

@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,6 +185,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.1.1 =
+* Fixed an OpenAI "HTTP 400: Invalid value: 'standard'" error when generating with the GPT Image models. The quality setting is now mapped to each model's accepted values — DALL-E 3 uses Standard/HD, while GPT Image models use Low/Medium/High/Auto (Standard maps to Medium, HD to High).
+
 = 1.1.0 =
 * **New: Style Presets.** Pick a ready-made look (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per post — no prompt engineering required. Extendable via the `aifig_style_presets` filter.
 * **New: Text & Logo Overlay.** Burn an auto-wrapped headline (the post title by default) and/or a logo/watermark directly onto generated images. Configurable font weight, size, color, vertical position, readability scrim (gradient/dark/light) and logo corner + size. Renders locally with Imagick or GD using a bundled Poppins (SIL OFL) font.
@@ -241,6 +244,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Fixes an HTTP 400 error when generating images with the GPT Image models (quality is now mapped to each model's accepted values).
 
 = 1.1.0 =
 Big creative update: style presets, text/logo overlays, multi-image variations, auto alt text, and social/Open Graph image sizes (generated locally from one image, no extra API cost). All new features are opt-in and default off, so existing behavior is unchanged.

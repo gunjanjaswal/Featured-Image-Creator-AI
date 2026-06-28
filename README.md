@@ -2,7 +2,7 @@
 
 Auto-generate stunning AI-powered featured images using OpenAI (DALL-E 3, GPT-4), Google Gemini, or Stability AI. Style presets, text/logo overlays, image variations, auto alt text, social/Open Graph sizes, bulk generation, scheduling, and multiple formats.
 
-![WordPress Plugin Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![WordPress Plugin Version](https://img.shields.io/badge/version-1.1.1-blue.svg)
 ![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.8%2B-blue.svg)
 ![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPLv2%2B-green.svg)
@@ -330,6 +330,9 @@ GNU General Public License for more details.
   - [Stability AI](https://stability.ai/)
 
 ## Changelog
+
+### 1.1.1
+- Fixed an OpenAI `HTTP 400: Invalid value: 'standard'` error when generating with the GPT Image models. Quality is now normalized per model in `AIFIG_OpenAI_Provider`: DALL-E 3 accepts `standard`/`hd`, while GPT Image models accept `low`/`medium`/`high`/`auto` (`standard` → `medium`, `hd` → `high`).
 
 ### 1.1.0
 - **Style presets:** one-click looks (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per-post override. Extendable via the `aifig_style_presets` filter. New `AIFIG_Styles` class.
