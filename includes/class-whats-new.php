@@ -168,7 +168,7 @@ class AIFIG_Whats_New
         ?>
         <div class="notice aifig-whats-new" style="padding:0;border:0;background:transparent;box-shadow:none;">
             <div style="background:#fff;border:1px solid #dcdcde;border-left:4px solid #764ba2;border-radius:8px;overflow:hidden;margin:10px 0;">
-                <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                <div style="background:#764ba2;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                     <strong style="font-size:16px;">
                         <?php
                         printf(

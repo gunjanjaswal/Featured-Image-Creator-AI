@@ -311,9 +311,10 @@ class AIFIG_Post_Meta_Box
         $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
         $chosen_id = isset($_POST['attachment_id']) ? absint($_POST['attachment_id']) : 0;
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above; IDs sanitized below.
-        $discard_raw = isset($_POST['discard_ids']) && is_array($_POST['discard_ids']) ? wp_unslash($_POST['discard_ids']) : array();
-        $discard_ids = array_map('absint', $discard_raw);
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
+        $discard_ids = isset($_POST['discard_ids']) && is_array($_POST['discard_ids'])
+            ? array_map('absint', wp_unslash($_POST['discard_ids']))
+            : array();
 
         if (!$post_id || !$chosen_id) {
             wp_send_json_error(array('message' => __('Invalid selection.', 'featured-image-creator-ai')));
