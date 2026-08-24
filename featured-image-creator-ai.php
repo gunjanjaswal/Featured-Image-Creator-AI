@@ -5,7 +5,7 @@
  * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
  * Version: 1.1.1
  * Requires at least: 5.8
- * Tested up to: 7.0
+ * Tested up to: 7.1
  * Requires PHP: 7.4
  * Author: Gunjan Jaswal
  * Author URI: https://www.gunjanjaswal.me
