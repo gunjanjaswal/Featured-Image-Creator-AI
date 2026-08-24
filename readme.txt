@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,6 +185,10 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.1.2 =
+* The featured image now appears straight away in the block editor after you generate or pick one. It was only ever refreshing the classic editor's featured image box, which the block editor does not have, so the sidebar sat there looking empty until you reloaded the page even though the image had saved fine.
+* Tidied up a nonce check that a code scanner was reading as missing. The check was always there, the annotation around it just did not cover every line.
+
 = 1.1.1 =
 * Fixed an OpenAI "HTTP 400: Invalid value: 'standard'" error when generating with the GPT Image models. The quality setting is now mapped to each model's accepted values — DALL-E 3 uses Standard/HD, while GPT Image models use Low/Medium/High/Auto (Standard maps to Medium, HD to High).
 
@@ -244,6 +248,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+The featured image now shows up immediately in the block editor after generating or picking one, instead of only after a page reload.
 
 = 1.1.1 =
 Fixes an HTTP 400 error when generating images with the GPT Image models (quality is now mapped to each model's accepted values).

@@ -5,6 +5,55 @@
 	'use strict';
 
 	/**
+	 * Show a newly set featured image in whichever editor is open.
+	 *
+	 * The classic editor keeps the featured image in #postimagediv, so reloading
+	 * that box is enough. The block editor has no such element: the image lives
+	 * in the editor's data store, and its panel only redraws once the store is
+	 * told about the change. The thumbnail is already saved on the server by the
+	 * time this runs, so the saved record is updated rather than the edited one,
+	 * which keeps the post from looking like it has unsaved changes.
+	 *
+	 * @param {number} attachmentId Attachment ID now set as the featured image.
+	 */
+	function refreshFeaturedImage(attachmentId) {
+		var $box = $('#postimagediv');
+
+		if ($box.length) {
+			$box.load(window.location.href + ' #postimagediv > *');
+			return;
+		}
+
+		var id = parseInt(attachmentId, 10);
+
+		if (!id || !window.wp || !wp.data) {
+			return;
+		}
+
+		try {
+			var editor = wp.data.select('core/editor');
+
+			if (!editor) {
+				return;
+			}
+
+			var postId = editor.getCurrentPostId();
+			var postType = editor.getCurrentPostType();
+
+			if (!postId || !postType) {
+				return;
+			}
+
+			wp.data.dispatch('core').receiveEntityRecords('postType', postType, [{
+				id: postId,
+				featured_media: id
+			}]);
+		} catch (e) {
+			// Nothing to update; the image is saved either way.
+		}
+	}
+
+	/**
 	 * Single post image generation
 	 */
 	function initSingleGeneration() {
@@ -45,8 +94,7 @@
 							)
 							.show();
 
-						// Update featured image box
-						$('#postimagediv').load(window.location.href + ' #postimagediv > *');
+						refreshFeaturedImage(response.data.attachment_id);
 
 						// Update status
 						$metaBox.find('.aifig-status').replaceWith(
@@ -179,7 +227,7 @@
 							'<img src="' + response.data.image_url + '" alt="">')
 						.show();
 
-					$('#postimagediv').load(window.location.href + ' #postimagediv > *');
+					refreshFeaturedImage(response.data.attachment_id);
 
 					$metaBox.find('.aifig-status').replaceWith(
 						'<p class="aifig-status">' +
@@ -510,8 +558,7 @@
 						$preview.find('img').attr('src', attachment.url);
 						$preview.show();
 
-						// Update featured image box
-						$('#postimagediv').load(window.location.href + ' #postimagediv > *');
+						refreshFeaturedImage(attachment.id);
 
 						// Update status
 						$metaBox.find('.aifig-status').replaceWith(

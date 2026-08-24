@@ -307,14 +307,13 @@ class AIFIG_Post_Meta_Box
             wp_send_json_error(array('message' => __('Security check failed.', 'featured-image-creator-ai')));
         }
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce and capability both verified above.
         $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
         $chosen_id = isset($_POST['attachment_id']) ? absint($_POST['attachment_id']) : 0;
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
         $discard_ids = isset($_POST['discard_ids']) && is_array($_POST['discard_ids'])
             ? array_map('absint', wp_unslash($_POST['discard_ids']))
             : array();
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         if (!$post_id || !$chosen_id) {
             wp_send_json_error(array('message' => __('Invalid selection.', 'featured-image-creator-ai')));
