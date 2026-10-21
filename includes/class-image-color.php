@@ -138,7 +138,7 @@ class AIFIG_Image_Color
             $img->clear();
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }
