@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,6 +185,11 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.1.3 =
+* Fixed the "Generate All Images" button on the Bulk Generate screen showing up invisible against the purple banner. It was falling back to WordPress's default button styling instead of the plugin's own, so the label and border washed out and you could barely see it.
+* The progress and results panels on the Bulk Generate screen now run the full width of the page and sit centered, instead of being squeezed into a narrow card.
+* Default image size is now 1200x675 (a clean 16:9) instead of 1024x675. Sites that already have a size saved keep it; this only changes the default for new installs.
+
 = 1.1.2 =
 * The featured image now appears straight away in the block editor after you generate or pick one. It was only ever refreshing the classic editor's featured image box, which the block editor does not have, so the sidebar sat there looking empty until you reloaded the page even though the image had saved fine.
 * Tidied up a nonce check that a code scanner was reading as missing. The check was always there, the annotation around it just did not cover every line.
@@ -248,6 +253,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.1.3 =
+Fixes the invisible "Generate All Images" button on the Bulk Generate screen, widens the progress and results panels, and sets the default image size to 1200x675 for new installs.
 
 = 1.1.2 =
 The featured image now shows up immediately in the block editor after generating or picking one, instead of only after a page reload.
