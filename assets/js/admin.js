@@ -296,6 +296,7 @@
 	 */
 	function initBatchGeneration() {
 		var batchInProgress = false;
+		var batchMode = 'missing';
 		var currentIndex = 0;
 		var postIds = [];
 		var results = {
@@ -312,11 +313,17 @@
 
 			var $btn = $(this);
 			var mode = $btn.data('mode') || 'missing';
+			batchMode = mode;
 
 			// Confirm action
-			var confirmMsg = mode === 'regenerate'
-				? 'Are you sure you want to regenerate ALL featured images? This will overwrite existing images.'
-				: aifigData.strings.confirmBatch;
+			var confirmMsg;
+			if (mode === 'regenerate') {
+				confirmMsg = 'Are you sure you want to regenerate ALL featured images? This will overwrite existing images.';
+			} else if (mode === 'recolor') {
+				confirmMsg = 'Recolour every existing featured image toward your brand colour? The images stay the same, only the colours shift.';
+			} else {
+				confirmMsg = aifigData.strings.confirmBatch;
+			}
 
 			if (!confirm(confirmMsg)) {
 				return;
@@ -396,14 +403,16 @@
 					.replace('{total}', postIds.length)
 			);
 
-			// Generate image
+			// Process this post (generate, or recolour an existing image).
+			var batchAction = batchMode === 'recolor' ? 'aifig_batch_recolor' : 'aifig_batch_generate';
 			$.ajax({
 				url: aifigData.ajaxUrl,
 				type: 'POST',
 				data: {
-					action: 'aifig_batch_generate',
+					action: batchAction,
 					nonce: aifigData.nonce,
-					post_id: postId
+					post_id: postId,
+					mode: batchMode
 				},
 				success: function (response) {
 					if (response.success) {
@@ -440,10 +449,13 @@
 			// Hide progress
 			$('.aifig-batch-progress').hide();
 
+			var doneWord = batchMode === 'recolor' ? 'recoloured' : 'generated';
+			var doneWordCap = batchMode === 'recolor' ? 'Recoloured' : 'Generated';
+
 			// Show results
 			var resultsHtml = '<div class="aifig-results-summary">';
 			resultsHtml += '<p><strong>' + aifigData.strings.batchComplete + '</strong></p>';
-			resultsHtml += '<p>Successfully generated: ' + results.success.length + '</p>';
+			resultsHtml += '<p>Successfully ' + doneWord + ': ' + results.success.length + '</p>';
 			if (results.errors.length > 0) {
 				resultsHtml += '<p>Errors: ' + results.errors.length + '</p>';
 			}
@@ -451,7 +463,7 @@
 
 			// Add success items
 			if (results.success.length > 0) {
-				resultsHtml += '<h4>Successfully Generated</h4>';
+				resultsHtml += '<h4>Successfully ' + doneWordCap + '</h4>';
 				results.success.forEach(function (item) {
 					resultsHtml += '<div class="aifig-result-item">';
 					resultsHtml += '<strong>' + item.title + '</strong>';
@@ -474,9 +486,13 @@
 			$('.aifig-batch-results').show();
 
 			// Re-enable button
-			$('.aifig-start-batch').prop('disabled', false).text(
-				$('.aifig-start-batch').data('mode') === 'regenerate' ? 'Regenerate All Images' : 'Generate All Images'
-			);
+			var btnLabel = 'Generate All Images';
+			if (batchMode === 'regenerate') {
+				btnLabel = 'Regenerate All Images';
+			} else if (batchMode === 'recolor') {
+				btnLabel = 'Recolour All Images';
+			}
+			$('.aifig-start-batch').prop('disabled', false).text(btnLabel);
 			// Restore icon if possible or just text is fine for now, page reload usually follows.
 
 			// Reload page after a delay to show updated post list

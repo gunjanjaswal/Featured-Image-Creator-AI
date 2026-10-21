@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,6 +185,12 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.2.0 =
+* **New: Colour Theme.** Pick a brand colour under Settings and new images are built around it. The colour is woven into the generation prompt so every provider leans on it, with an optional "Exact Colour" toggle that recolours the finished image locally (Imagick or GD) toward your exact hue at an adjustable strength. No extra API cost.
+* **New: Recolour existing images.** A "Recolour Existing" tab on the Bulk Generate screen shifts the colours of featured images you already have toward your brand colour. The image stays exactly the same, only the colours change, and it runs on your server with no API calls.
+* **New: Test API Key button.** On the settings screen, check your saved key against the provider without generating an image. It reports success or the exact error, so a wrong key is caught before you run a batch.
+* Auto-generate on publish now also covers posts published directly from new (for example via the REST API or quick publish), not only drafts and scheduled posts. A post published without a featured image still gets one.
+
 = 1.1.3 =
 * Fixed the "Generate All Images" button on the Bulk Generate screen showing up invisible against the purple banner. It was falling back to WordPress's default button styling instead of the plugin's own, so the label and border washed out and you could barely see it.
 * The progress and results panels on the Bulk Generate screen now run the full width of the page and sit centered, instead of being squeezed into a narrow card.
@@ -253,6 +259,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Adds a brand Colour Theme for new images, a bulk "Recolour Existing" tool that shifts your current featured images toward that colour, and a Test API Key button on the settings screen. Auto-generate on publish now also catches posts published directly.
 
 = 1.1.3 =
 Fixes the invisible "Generate All Images" button on the Bulk Generate screen, widens the progress and results panels, and sets the default image size to 1200x675 for new installs.

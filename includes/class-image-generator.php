@@ -623,4 +623,34 @@ class AIFIG_Image_Generator
 
         return $query->posts;
     }
+
+    /**
+     * Get published posts that DO have a featured image.
+     *
+     * Used by the bulk "recolour existing images" tool.
+     *
+     * @param array $args Optional WP_Query overrides.
+     * @return int[] Post IDs.
+     */
+    public static function get_posts_with_featured_image($args = array())
+    {
+        $defaults = array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Necessary to find posts with featured images, only used in admin
+            'meta_query' => array(
+                array(
+                    'key' => '_thumbnail_id',
+                    'compare' => 'EXISTS',
+                ),
+            ),
+        );
+
+        $args = wp_parse_args($args, $defaults);
+        $query = new WP_Query($args);
+
+        return $query->posts;
+    }
 }

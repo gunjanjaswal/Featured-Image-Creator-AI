@@ -28,6 +28,7 @@ class AIFIG_Bulk_Generator
         add_action('admin_notices', array($this, 'bulk_action_notices'));
         add_action('admin_menu', array($this, 'add_bulk_page'));
         add_action('wp_ajax_aifig_batch_generate', array($this, 'ajax_batch_generate'));
+        add_action('wp_ajax_aifig_batch_recolor', array($this, 'ajax_batch_recolor'));
         add_action('wp_ajax_aifig_get_batch_ids', array($this, 'ajax_get_batch_ids'));
     }
 
@@ -181,15 +182,21 @@ class AIFIG_Bulk_Generator
         }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display logic only.
-        $mode = isset($_GET['mode']) && $_GET['mode'] === 'regenerate' ? 'regenerate' : 'missing';
-        $generator = new AIFIG_Image_Generator();
-        
+        $mode = isset($_GET['mode']) ? sanitize_key(wp_unslash($_GET['mode'])) : 'missing';
+        if (!in_array($mode, array('missing', 'regenerate', 'recolor'), true)) {
+            $mode = 'missing';
+        }
+        $generator  = new AIFIG_Image_Generator();
+        $color_set  = (bool) sanitize_hex_color(get_option('aifig_color_value', ''));
+
         if ($mode === 'regenerate') {
             // Fetch all posts (published)
              $posts = AIFIG_Image_Generator::get_posts_without_featured_image(array(
                 // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional override.
                 'meta_query' => array(), // Override to get all posts
              ));
+        } elseif ($mode === 'recolor') {
+            $posts = AIFIG_Image_Generator::get_posts_with_featured_image();
         } else {
             $posts = AIFIG_Image_Generator::get_posts_without_featured_image();
         }
@@ -204,19 +211,24 @@ class AIFIG_Bulk_Generator
                 <a href="<?php echo esc_url(admin_url('admin.php?page=aifig-bulk-generate&mode=regenerate')); ?>" class="nav-tab <?php echo $mode === 'regenerate' ? 'nav-tab-active' : ''; ?>">
                     <?php esc_html_e('Regenerate All', 'featured-image-creator-ai'); ?>
                 </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=aifig-bulk-generate&mode=recolor')); ?>" class="nav-tab <?php echo $mode === 'recolor' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Recolour Existing', 'featured-image-creator-ai'); ?>
+                </a>
             </nav>
 
             <p class="description" style="font-size: 16px; margin-bottom: 30px;">
                 <?php 
                 if ($mode === 'regenerate') {
                     esc_html_e('Regenerate featured images for ALL posts. This will overwrite existing featured images.', 'featured-image-creator-ai');
+                } elseif ($mode === 'recolor') {
+                    esc_html_e('Shift the colours of every existing featured image toward your brand colour. The image stays the same, only the colours change. No API calls, no cost.', 'featured-image-creator-ai');
                 } else {
                     esc_html_e('Automatically generate AI-powered featured images for posts that don\'t have one.', 'featured-image-creator-ai');
                 }
                 ?>
             </p>
 
-            <?php if (!$generator->is_configured()): ?>
+            <?php if ($mode !== 'recolor' && !$generator->is_configured()): ?>
                 <div class="notice notice-error" style="border-left-width: 4px; padding: 15px;">
                     <h3 style="margin-top: 0;">⚠️ <?php esc_html_e('API Not Configured', 'featured-image-creator-ai'); ?></h3>
                     <p>
@@ -225,6 +237,20 @@ class AIFIG_Bulk_Generator
                         printf(
                             /* translators: %s: Settings page URL */
                             wp_kses_post(__('Please <a href="%s"><strong>configure your API key</strong></a> to use this feature.', 'featured-image-creator-ai')),
+                            esc_url($settings_url)
+                        );
+                        ?>
+                    </p>
+                </div>
+            <?php elseif ($mode === 'recolor' && !$color_set): ?>
+                <div class="notice notice-error" style="border-left-width: 4px; padding: 15px;">
+                    <h3 style="margin-top: 0;">⚠️ <?php esc_html_e('No Brand Colour Set', 'featured-image-creator-ai'); ?></h3>
+                    <p>
+                        <?php
+                        $settings_url = admin_url('admin.php?page=aifig-settings');
+                        printf(
+                            /* translators: %s: Settings page URL */
+                            wp_kses_post(__('Pick a <a href="%s"><strong>brand colour</strong></a> under the Colour Theme settings first. Recolouring shifts your existing featured images toward that colour.', 'featured-image-creator-ai')),
                             esc_url($settings_url)
                         );
                         ?>
@@ -260,6 +286,16 @@ class AIFIG_Bulk_Generator
                                             'featured-image-creator-ai'
                                         ))
                                     );
+                                } elseif ($mode === 'recolor') {
+                                    printf(
+                                        /* translators: %d: Number of posts */
+                                        esc_html(_n(
+                                            'Post with a featured image to recolour',
+                                            'Posts with featured images to recolour',
+                                            count($posts),
+                                            'featured-image-creator-ai'
+                                        ))
+                                    );
                                 } else {
                                     printf(
                                         /* translators: %d: Number of posts */
@@ -278,9 +314,11 @@ class AIFIG_Bulk_Generator
                             <button type="button" class="button button-hero aifig-start-batch"
                                 data-mode="<?php echo esc_attr($mode); ?>">
                                 <span class="dashicons dashicons-images-alt2"></span>
-                                <?php 
+                                <?php
                                 if ($mode === 'regenerate') {
                                     esc_html_e('Regenerate All Images', 'featured-image-creator-ai');
+                                } elseif ($mode === 'recolor') {
+                                    esc_html_e('Recolour All Images', 'featured-image-creator-ai');
                                 } else {
                                     esc_html_e('Generate All Images', 'featured-image-creator-ai');
                                 }
@@ -406,17 +444,85 @@ class AIFIG_Bulk_Generator
         }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by AIFIG_Security::verify_request.
-        $mode = isset($_POST['mode']) && $_POST['mode'] === 'regenerate' ? 'regenerate' : 'missing';
+        $mode = isset($_POST['mode']) ? sanitize_key(wp_unslash($_POST['mode'])) : 'missing';
 
         if ($mode === 'regenerate') {
             $posts = AIFIG_Image_Generator::get_posts_without_featured_image(array(
                 // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional override.
                 'meta_query' => array(),
             ));
+        } elseif ($mode === 'recolor') {
+            $posts = AIFIG_Image_Generator::get_posts_with_featured_image();
         } else {
             $posts = AIFIG_Image_Generator::get_posts_without_featured_image();
         }
 
         wp_send_json_success($posts);
+    }
+
+    /**
+     * AJAX handler to recolour one post's existing featured image.
+     */
+    public function ajax_batch_recolor()
+    {
+        if (!AIFIG_Security::verify_request('aifig_generate_image', 'edit_posts')) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'featured-image-creator-ai')));
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
+        $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
+
+        if (!$post_id) {
+            wp_send_json_error(array('message' => __('Invalid post ID.', 'featured-image-creator-ai')));
+        }
+
+        $color = sanitize_hex_color(get_option('aifig_color_value', ''));
+        if (!$color) {
+            wp_send_json_error(array(
+                'message'    => __('Set a brand colour under Colour Theme settings first.', 'featured-image-creator-ai'),
+                'post_id'    => $post_id,
+                'post_title' => get_the_title($post_id),
+            ));
+        }
+
+        if (!class_exists('AIFIG_Image_Color') || !AIFIG_Image_Color::is_available()) {
+            wp_send_json_error(array(
+                'message'    => __('Image recolouring needs the Imagick or GD PHP extension, which is not available on this server.', 'featured-image-creator-ai'),
+                'post_id'    => $post_id,
+                'post_title' => get_the_title($post_id),
+            ));
+        }
+
+        $attachment_id = get_post_thumbnail_id($post_id);
+        $file          = $attachment_id ? get_attached_file($attachment_id) : '';
+
+        if (!$attachment_id || !$file || !file_exists($file)) {
+            wp_send_json_error(array(
+                'message'    => __('This post has no featured image file to recolour.', 'featured-image-creator-ai'),
+                'post_id'    => $post_id,
+                'post_title' => get_the_title($post_id),
+            ));
+        }
+
+        $strength = (int) get_option('aifig_color_strength', 60);
+        $changed  = AIFIG_Image_Color::apply($file, $color, $strength);
+
+        if (!$changed) {
+            wp_send_json_error(array(
+                'message'    => __('Could not recolour this image.', 'featured-image-creator-ai'),
+                'post_id'    => $post_id,
+                'post_title' => get_the_title($post_id),
+            ));
+        }
+
+        // Pixels changed; refresh attachment metadata (e.g. filesize).
+        $metadata = wp_generate_attachment_metadata($attachment_id, $file);
+        wp_update_attachment_metadata($attachment_id, $metadata);
+
+        wp_send_json_success(array(
+            'message'    => __('Featured image recoloured.', 'featured-image-creator-ai'),
+            'post_id'    => $post_id,
+            'post_title' => get_the_title($post_id),
+        ));
     }
 }
