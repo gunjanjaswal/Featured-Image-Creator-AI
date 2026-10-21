@@ -618,6 +618,44 @@
 	}
 
 	/**
+	 * Test the saved API key from the settings page.
+	 */
+	function initApiTest() {
+		$('.aifig-test-api').on('click', function (e) {
+			e.preventDefault();
+
+			var $btn = $(this);
+			var $result = $('.aifig-test-api-result');
+
+			$btn.prop('disabled', true);
+			$result.css('color', '#646970').text(aifigData.strings.testing);
+
+			$.ajax({
+				url: aifigData.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'aifig_test_api',
+					nonce: aifigData.nonce
+				},
+				success: function (response) {
+					if (response && response.success) {
+						$result.css('color', '#008a20').text('✓ ' + response.data.message);
+					} else {
+						var msg = (response && response.data && response.data.message) ? response.data.message : aifigData.strings.testError;
+						$result.css('color', '#d63638').text('✗ ' + msg);
+					}
+				},
+				error: function () {
+					$result.css('color', '#d63638').text('✗ ' + aifigData.strings.testError);
+				},
+				complete: function () {
+					$btn.prop('disabled', false);
+				}
+			});
+		});
+	}
+
+	/**
 	 * Initialize on document ready
 	 */
 	$(document).ready(function () {
@@ -628,6 +666,7 @@
 		initManualUpload();
 		initLogoPicker();
 		initSettingsPage();
+		initApiTest();
 	});
 
 })(jQuery);

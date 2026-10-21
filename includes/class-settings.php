@@ -25,6 +25,26 @@ class AIFIG_Settings
     {
         add_action('admin_menu', array($this, 'add_settings_page'));
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('wp_ajax_aifig_test_api', array($this, 'ajax_test_api'));
+    }
+
+    /**
+     * AJAX: test the saved API key against the provider.
+     */
+    public function ajax_test_api()
+    {
+        if (!AIFIG_Security::verify_request('aifig_generate_image', 'manage_options')) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'featured-image-creator-ai')));
+        }
+
+        $generator = new AIFIG_Image_Generator();
+        $result    = $generator->test_connection();
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array('message' => __('Connection successful. Your API key is working.', 'featured-image-creator-ai')));
     }
 
     /**
@@ -303,6 +323,47 @@ class AIFIG_Settings
             )
         );
 
+        // --- Colour theme ---
+        register_setting(
+            'aifig_settings_group',
+            'aifig_color_enabled',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 0,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_color_value',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => array($this, 'sanitize_hex_optional'),
+                'default' => '',
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_color_enforce',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => array($this, 'sanitize_checkbox'),
+                'default' => 0,
+            )
+        );
+
+        register_setting(
+            'aifig_settings_group',
+            'aifig_color_strength',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => array($this, 'sanitize_percent'),
+                'default' => 60,
+            )
+        );
+
         // Add settings sections
         add_settings_section(
             'aifig_api_section',
@@ -331,6 +392,14 @@ class AIFIG_Settings
             'aifig_api_key',
             __('API Key', 'featured-image-creator-ai'),
             array($this, 'render_api_key_field'),
+            'aifig-settings',
+            'aifig_api_section'
+        );
+
+        add_settings_field(
+            'aifig_api_test',
+            __('Test Connection', 'featured-image-creator-ai'),
+            array($this, 'render_api_test_field'),
             'aifig-settings',
             'aifig_api_section'
         );
@@ -470,6 +539,38 @@ class AIFIG_Settings
             'aifig-settings',
             'aifig_social_section'
         );
+
+        // --- Colour Theme section ---
+        add_settings_section(
+            'aifig_color_section',
+            __('Colour Theme', 'featured-image-creator-ai'),
+            array($this, 'render_color_section'),
+            'aifig-settings'
+        );
+
+        add_settings_field(
+            'aifig_color_enabled',
+            __('Enable Colour Theme', 'featured-image-creator-ai'),
+            array($this, 'render_color_enabled_field'),
+            'aifig-settings',
+            'aifig_color_section'
+        );
+
+        add_settings_field(
+            'aifig_color_value',
+            __('Brand Colour', 'featured-image-creator-ai'),
+            array($this, 'render_color_value_field'),
+            'aifig-settings',
+            'aifig_color_section'
+        );
+
+        add_settings_field(
+            'aifig_color_enforce',
+            __('Exact Colour', 'featured-image-creator-ai'),
+            array($this, 'render_color_enforce_field'),
+            'aifig-settings',
+            'aifig_color_section'
+        );
     }
 
     /**
@@ -542,6 +643,33 @@ class AIFIG_Settings
     {
         $color = sanitize_hex_color($value);
         return $color ? $color : '#ffffff';
+    }
+
+    /**
+     * Sanitize an optional hex colour. Empty stays empty (not set).
+     *
+     * @param mixed $value Raw value.
+     * @return string Hex colour or ''.
+     */
+    public function sanitize_hex_optional($value)
+    {
+        $value = is_string($value) ? trim($value) : '';
+        if ('' === $value) {
+            return '';
+        }
+        $color = sanitize_hex_color($value);
+        return $color ? $color : '';
+    }
+
+    /**
+     * Sanitize a 0-100 percentage.
+     *
+     * @param mixed $value Raw value.
+     * @return int
+     */
+    public function sanitize_percent($value)
+    {
+        return max(0, min(100, absint($value)));
     }
 
     /**
@@ -715,6 +843,23 @@ class AIFIG_Settings
             </p>
         <?php endif; ?>
     <?php
+    }
+
+    /**
+     * Render the "Test Connection" button.
+     */
+    public function render_api_test_field()
+    {
+        ?>
+        <button type="button" class="button button-secondary aifig-test-api">
+            <span class="dashicons dashicons-admin-plugins" style="margin-top: 4px;"></span>
+            <?php esc_html_e('Test API Key', 'featured-image-creator-ai'); ?>
+        </button>
+        <span class="aifig-test-api-result" style="margin-left: 10px; font-weight: 600;"></span>
+        <p class="description">
+            <?php esc_html_e('Checks the saved API key against the provider without generating an image. Save any new key first.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
     }
 
     /**
@@ -1063,6 +1208,67 @@ class AIFIG_Settings
         </label>
         <p class="description">
             <?php esc_html_e('Sets the image for Yoast SEO and Rank Math when present, and outputs og:image / twitter:image tags otherwise. Requires the "Open Graph" size above.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Colour Theme section intro.
+     */
+    public function render_color_section()
+    {
+        echo '<p>' . esc_html__('Give generated images a consistent brand colour. The colour is woven into the prompt so new images lean on it, and you can optionally force the exact hue with a local recolour pass.', 'featured-image-creator-ai') . '</p>';
+    }
+
+    /**
+     * Render the "enable colour theme" checkbox.
+     */
+    public function render_color_enabled_field()
+    {
+        $enabled = (bool) get_option('aifig_color_enabled', false);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_color_enabled" value="0" />
+            <input type="checkbox" name="aifig_color_enabled" id="aifig_color_enabled" value="1" <?php checked($enabled); ?> />
+            <?php esc_html_e('Steer generated images toward a brand colour', 'featured-image-creator-ai'); ?>
+        </label>
+        <?php
+    }
+
+    /**
+     * Render the brand colour picker.
+     */
+    public function render_color_value_field()
+    {
+        $value = get_option('aifig_color_value', '');
+        ?>
+        <input type="color" name="aifig_color_value" id="aifig_color_value" value="<?php echo esc_attr($value ? $value : '#2563eb'); ?>" />
+        <input type="text" value="<?php echo esc_attr($value); ?>" class="regular-text code aifig-color-mirror" placeholder="#2563eb" readonly style="max-width: 110px;" />
+        <p class="description">
+            <?php esc_html_e('The dominant colour new images are built around. Leave the theme disabled above to ignore it.', 'featured-image-creator-ai'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the "exact colour" toggle and strength.
+     */
+    public function render_color_enforce_field()
+    {
+        $enforce  = (bool) get_option('aifig_color_enforce', false);
+        $strength = (int) get_option('aifig_color_strength', 60);
+        ?>
+        <label>
+            <input type="hidden" name="aifig_color_enforce" value="0" />
+            <input type="checkbox" name="aifig_color_enforce" id="aifig_color_enforce" value="1" <?php checked($enforce); ?> />
+            <?php esc_html_e('Force the exact colour with a local recolour pass after each image is generated', 'featured-image-creator-ai'); ?>
+        </label>
+        <p style="margin-top: 10px;">
+            <label for="aifig_color_strength"><?php esc_html_e('Strength', 'featured-image-creator-ai'); ?></label>
+            <input type="number" name="aifig_color_strength" id="aifig_color_strength" value="<?php echo esc_attr($strength); ?>" min="0" max="100" step="5" class="small-text" /> %
+        </p>
+        <p class="description">
+            <?php esc_html_e('Keeps the image exactly as generated and only shifts the colours toward your brand hue. Runs on your server with Imagick or GD, no extra API cost. 0% = off, 100% = full wash.', 'featured-image-creator-ai'); ?>
         </p>
         <?php
     }

@@ -232,6 +232,8 @@ function aifig_enqueue_admin_assets($hook)
 				'useThisOne' => __('Use this one', 'featured-image-creator-ai'),
 				'variationsError' => __('Could not generate options. Please try again.', 'featured-image-creator-ai'),
 				'selectLogo' => __('Select Logo / Watermark', 'featured-image-creator-ai'),
+				'testing' => __('Testing connection…', 'featured-image-creator-ai'),
+				'testError' => __('Could not reach the API. Please try again.', 'featured-image-creator-ai'),
 			),
 		)
 	);

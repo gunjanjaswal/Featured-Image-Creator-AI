@@ -93,6 +93,22 @@ class AIFIG_Image_Generator
     }
 
     /**
+     * Test the configured provider's API key against the provider.
+     *
+     * @return true|WP_Error True when the key authenticates, WP_Error otherwise.
+     */
+    public function test_connection()
+    {
+        if (!$this->is_configured()) {
+            return new WP_Error(
+                'not_configured',
+                __('No API key saved yet. Enter your key and save, then test.', 'featured-image-creator-ai')
+            );
+        }
+        return $this->api_provider->validate_api_key();
+    }
+
+    /**
      * Generate a featured image for a post and set it as the thumbnail.
      *
      * @param int   $post_id Post ID.
@@ -153,9 +169,11 @@ class AIFIG_Image_Generator
             );
         }
 
-        // Build prompt from template, applying the chosen style preset.
+        // Build prompt from template, applying the chosen style preset and
+        // brand colour (per-post override or the global setting).
         $style  = isset($args['style']) ? $args['style'] : null;
-        $prompt = $this->build_prompt($title, $style);
+        $color  = $this->resolve_color($args);
+        $prompt = $this->build_prompt($title, $style, $color);
 
         // Get image dimensions.
         $width  = get_option('aifig_image_width', 1200);
@@ -168,8 +186,8 @@ class AIFIG_Image_Generator
             return $result;
         }
 
-        // Download and attach image (also converts, resizes and applies overlay).
-        $attachment_id = $this->download_and_attach($result['url'], $post_id, $title);
+        // Download and attach image (also converts, resizes, recolours and applies overlay).
+        $attachment_id = $this->download_and_attach($result['url'], $post_id, $title, $color);
 
         if (is_wp_error($attachment_id)) {
             return $attachment_id;
@@ -321,7 +339,7 @@ class AIFIG_Image_Generator
      * @param string|null $style Style preset key, or null to use the saved setting.
      * @return string Generated prompt.
      */
-    private function build_prompt($title, $style = null)
+    private function build_prompt($title, $style = null, $color_hex = '')
     {
         $template = get_option('aifig_prompt_template', 'Create a professional blog featured image for: {title}');
         $prompt   = str_replace('{title}', $title, $template);
@@ -337,7 +355,44 @@ class AIFIG_Image_Generator
             }
         }
 
+        if ('' !== $color_hex && class_exists('AIFIG_Image_Color')) {
+            $fragment = AIFIG_Image_Color::prompt_fragment($color_hex);
+            if ('' !== $fragment) {
+                $prompt = rtrim($prompt) . ' ' . $fragment;
+            }
+        }
+
         return $prompt;
+    }
+
+    /**
+     * Resolve the brand colour for this generation.
+     *
+     * A per-post override in $args wins; otherwise the global colour theme is
+     * used when enabled. Returns '' when no colour applies.
+     *
+     * @param array $args Generation args (optional 'color' key).
+     * @return string Hex colour or ''.
+     */
+    private function resolve_color($args)
+    {
+        if (isset($args['color'])) {
+            $override = sanitize_hex_color($args['color']);
+            if ($override) {
+                return $override;
+            }
+            // An explicit empty override means "no colour for this generation".
+            if ('' === trim((string) $args['color'])) {
+                return '';
+            }
+        }
+
+        if (get_option('aifig_color_enabled', false)) {
+            $color = sanitize_hex_color(get_option('aifig_color_value', ''));
+            return $color ? $color : '';
+        }
+
+        return '';
     }
 
     /**
@@ -348,7 +403,7 @@ class AIFIG_Image_Generator
      * @param string $title     Image title.
      * @return int|WP_Error Attachment ID on success, WP_Error on failure.
      */
-    private function download_and_attach($image_url, $post_id, $title)
+    private function download_and_attach($image_url, $post_id, $title, $color_hex = '')
     {
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -428,10 +483,50 @@ class AIFIG_Image_Generator
         // Resize image to exact dimensions if needed
         $this->resize_image($attachment_id);
 
+        // Force the brand colour with a local recolour pass, if enabled.
+        $this->maybe_apply_color($attachment_id, $color_hex);
+
         // Burn text / logo overlay onto the image if enabled.
         $this->maybe_apply_overlay($attachment_id, $post_id);
 
         return $attachment_id;
+    }
+
+    /**
+     * Apply the exact-colour recolour pass to a generated attachment.
+     *
+     * Only runs when a colour is in play and the "Exact Colour" setting is on.
+     * Runs before the overlay so headline text and logos keep their own colour.
+     *
+     * @param int    $attachment_id Attachment ID.
+     * @param string $color_hex     Resolved brand colour, or ''.
+     * @return void
+     */
+    private function maybe_apply_color($attachment_id, $color_hex)
+    {
+        if ('' === $color_hex) {
+            return;
+        }
+        if (!get_option('aifig_color_enforce', false)) {
+            return;
+        }
+        if (!class_exists('AIFIG_Image_Color') || !AIFIG_Image_Color::is_available()) {
+            return;
+        }
+
+        $file = get_attached_file($attachment_id);
+        if (!$file || !file_exists($file)) {
+            return;
+        }
+
+        $strength = (int) get_option('aifig_color_strength', 60);
+        $changed  = AIFIG_Image_Color::apply($file, $color_hex, $strength);
+
+        if ($changed) {
+            // Pixels changed; refresh attachment metadata (e.g. filesize).
+            $metadata = wp_generate_attachment_metadata($attachment_id, $file);
+            wp_update_attachment_metadata($attachment_id, $metadata);
+        }
     }
 
     /**
