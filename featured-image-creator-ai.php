@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
- * Description: Automatically generate 1024x675px featured images for posts using AI image generation APIs. Bring your own API key.
+ * Description: Automatically generate 1200x675px featured images for posts using AI image generation APIs. Bring your own API key.
  * Version: 1.1.2
  * Requires at least: 5.8
  * Tested up to: 7.1
@@ -37,7 +37,7 @@ function aifig_activate()
 	// Set default options
 	add_option('aifig_api_provider', 'openai');
 	add_option('aifig_prompt_template', 'Create a professional blog featured image for: {title}');
-	add_option('aifig_image_width', 1024);
+	add_option('aifig_image_width', 1200);
 	add_option('aifig_image_height', 675);
 
 	// AI enhancements (1.1.0).

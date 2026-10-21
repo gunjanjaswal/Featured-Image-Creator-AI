@@ -116,7 +116,7 @@ class AIFIG_Settings
             array(
                 'type' => 'integer',
                 'sanitize_callback' => 'absint',
-                'default' => 1024,
+                'default' => 1200,
             )
         );
 
@@ -779,7 +779,7 @@ class AIFIG_Settings
      */
     public function render_image_dimensions_field()
     {
-        $width = get_option('aifig_image_width', 1024);
+        $width = get_option('aifig_image_width', 1200);
         $height = get_option('aifig_image_height', 675);
         ?>
         <input type="number" name="aifig_image_width" id="aifig_image_width" value="<?php echo esc_attr($width); ?>" min="256"
@@ -787,7 +787,7 @@ class AIFIG_Settings
         <input type="number" name="aifig_image_height" id="aifig_image_height" value="<?php echo esc_attr($height); ?>"
             min="256" max="2048" class="small-text" /> px
         <p class="description">
-            <?php esc_html_e('Desired image dimensions. Default: 1024×675px (recommended for featured images).', 'featured-image-creator-ai'); ?>
+            <?php esc_html_e('Desired image dimensions. Default: 1200×675px (recommended for featured images).', 'featured-image-creator-ai'); ?>
         </p>
         <?php
     }

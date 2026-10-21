@@ -255,13 +255,16 @@
 	margin-top: 0;
 }
 
-.aifig-start-batch {
+.aifig-bulk-container .button.aifig-start-batch {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 	border: none;
-	color: white;
+	color: #fff;
+	text-shadow: none;
+	height: auto;
+	line-height: 1.2;
 	padding: 15px 30px;
 	font-size: 16px;
 	font-weight: 600;
@@ -271,21 +274,40 @@
 	cursor: pointer;
 }
 
-.aifig-start-batch:hover {
+.aifig-bulk-container .button.aifig-start-batch:hover,
+.aifig-bulk-container .button.aifig-start-batch:focus {
+	color: #fff;
+	border-color: transparent;
 	transform: translateY(-2px);
 	box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
 	background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
-.aifig-start-batch:active {
+.aifig-bulk-container .button.aifig-start-batch:active {
 	transform: translateY(0);
 }
 
-.aifig-start-batch .dashicons {
+.aifig-bulk-container .button.aifig-start-batch .dashicons {
 	font-size: 24px;
 	width: 24px;
 	height: 24px;
 	margin-right: 8px;
+}
+
+.aifig-bulk-container .aifig-batch-progress,
+.aifig-bulk-container .aifig-batch-results {
+	max-width: 100%;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+.aifig-bulk-container .aifig-batch-progress h3,
+.aifig-bulk-container .aifig-batch-results h3 {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
 }
 
 .aifig-batch-progress {
@@ -462,7 +484,7 @@
 		padding: 10px;
 	}
 
-	.aifig-start-batch {
+	.aifig-bulk-container .button.aifig-start-batch {
 		width: 100%;
 		justify-content: center;
 	}

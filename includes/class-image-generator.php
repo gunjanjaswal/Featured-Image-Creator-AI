@@ -158,7 +158,7 @@ class AIFIG_Image_Generator
         $prompt = $this->build_prompt($title, $style);
 
         // Get image dimensions.
-        $width  = get_option('aifig_image_width', 1024);
+        $width  = get_option('aifig_image_width', 1200);
         $height = get_option('aifig_image_height', 675);
 
         // Generate image.
@@ -475,7 +475,7 @@ class AIFIG_Image_Generator
      */
     private function resize_image($attachment_id)
     {
-        $target_width = get_option('aifig_image_width', 1024);
+        $target_width = get_option('aifig_image_width', 1200);
         $target_height = get_option('aifig_image_height', 675);
 
         $file_path = get_attached_file($attachment_id);
