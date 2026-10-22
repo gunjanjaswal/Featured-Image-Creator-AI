@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -186,6 +186,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.2.2 =
+* Every site now defaults to a 1200x675 (16:9) image size. New installs already started there; on update, existing sites that were still on the old 1024x675 size (or any other saved size) are moved to 1200x675 once. You can still change the size afterward under Settings, and your choice sticks.
+
 = 1.2.1 =
 * **New: Per-category colours.** On top of the global Colour Theme, you can now assign a brand colour to individual categories. Posts in a category with its own colour are built around that colour instead of the site-wide one, so a "News" section can run blue while "Recipes" runs green. Posts in a category without a rule keep using the global colour, and a per-post override still beats everything.
 
@@ -263,6 +266,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Standardises the image size at 1200x675 for every site. Existing installs still on the old 1024x675 (or another saved size) are moved to 1200x675 once on update; you can change it afterward in Settings.
 
 = 1.2.1 =
 Adds per-category colours: assign a brand colour to individual categories so different sections of your site get different-coloured images, on top of the global Colour Theme.

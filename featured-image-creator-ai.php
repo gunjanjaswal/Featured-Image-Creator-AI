@@ -3,7 +3,7 @@
  * Plugin Name: Featured Image Creator AI
  * Plugin URI: https://github.com/gunjanjaswal/Featured-Image-Creator-AI
  * Description: Automatically generate 1200x675px featured images for posts using AI image generation APIs. Bring your own API key.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Requires at least: 5.8
  * Tested up to: 7.1
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('AIFIG_VERSION', '1.2.1');
+define('AIFIG_VERSION', '1.2.2');
 define('AIFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIFIG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -39,6 +39,10 @@ function aifig_activate()
 	add_option('aifig_prompt_template', 'Create a professional blog featured image for: {title}');
 	add_option('aifig_image_width', 1200);
 	add_option('aifig_image_height', 675);
+
+	// Fresh installs already start at 1200x675, so skip the one-time size
+	// migration that brings older installs onto that default.
+	add_option('aifig_size_migrated_1200x675', 1);
 
 	// AI enhancements (1.1.0).
 	add_option('aifig_style_preset', 'none');
@@ -80,6 +84,25 @@ function aifig_deactivate()
 	flush_rewrite_rules();
 }
 register_deactivation_hook(__FILE__, 'aifig_deactivate');
+
+/**
+ * One-time migration: bring every install onto the 1200x675 image size.
+ *
+ * New installs already start at 1200x675 from the activation hook. Existing
+ * installs kept whatever they had saved (the old 1024x675 default, or a custom
+ * size), so on update this resets them to 1200x675 once. A site owner can still
+ * change the size afterward; the flag keeps this from running again.
+ */
+function aifig_migrate_image_size()
+{
+	if (get_option('aifig_size_migrated_1200x675')) {
+		return;
+	}
+	update_option('aifig_image_width', 1200);
+	update_option('aifig_image_height', 675);
+	update_option('aifig_size_migrated_1200x675', 1);
+}
+add_action('admin_init', 'aifig_migrate_image_size');
 
 /**
  * Autoloader for plugin classes.
