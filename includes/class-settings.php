@@ -364,6 +364,16 @@ class AIFIG_Settings
             )
         );
 
+        register_setting(
+            'aifig_settings_group',
+            'aifig_category_colors',
+            array(
+                'type' => 'array',
+                'sanitize_callback' => array($this, 'sanitize_category_colors'),
+                'default' => array(),
+            )
+        );
+
         // Add settings sections
         add_settings_section(
             'aifig_api_section',
@@ -571,6 +581,76 @@ class AIFIG_Settings
             'aifig-settings',
             'aifig_color_section'
         );
+
+        add_settings_field(
+            'aifig_category_colors',
+            __('Per-category Colours', 'featured-image-creator-ai'),
+            array($this, 'render_category_colors_field'),
+            'aifig-settings',
+            'aifig_color_section'
+        );
+    }
+
+    /**
+     * Sanitize the per-category colour map (term_id => hex), dropping blanks.
+     *
+     * @param mixed $value Raw submitted map.
+     * @return array
+     */
+    public function sanitize_category_colors($value)
+    {
+        $clean = array();
+        if (is_array($value)) {
+            foreach ($value as $term_id => $hex) {
+                $term_id = absint($term_id);
+                $hex     = sanitize_hex_color((string) $hex);
+                if ($term_id && $hex) {
+                    $clean[$term_id] = $hex;
+                }
+            }
+        }
+        return $clean;
+    }
+
+    /**
+     * Render a colour picker per category for the colour theme.
+     */
+    public function render_category_colors_field()
+    {
+        $saved      = get_option('aifig_category_colors', array());
+        $saved      = is_array($saved) ? $saved : array();
+        $categories = get_terms(array(
+            'taxonomy'   => 'category',
+            'hide_empty' => false,
+            'number'     => 200,
+        ));
+
+        if (is_wp_error($categories) || empty($categories)) {
+            echo '<p class="description">' . esc_html__('No categories found yet.', 'featured-image-creator-ai') . '</p>';
+            return;
+        }
+        ?>
+        <p class="description" style="margin-bottom:10px;">
+            <?php esc_html_e('Give a category its own colour and posts in it are generated around that colour instead of the brand colour above. Leave a category blank to use the brand colour. Requires the Colour Theme to be enabled.', 'featured-image-creator-ai'); ?>
+        </p>
+        <table class="widefat striped" style="max-width:460px;">
+            <tbody>
+            <?php foreach ($categories as $category) :
+                $value = isset($saved[$category->term_id]) ? $saved[$category->term_id] : '';
+                ?>
+                <tr>
+                    <td><?php echo esc_html($category->name); ?></td>
+                    <td style="width:120px;">
+                        <input type="color" name="aifig_category_colors[<?php echo esc_attr($category->term_id); ?>]" value="<?php echo esc_attr($value ? $value : '#ffffff'); ?>" />
+                        <?php if ($value) : ?>
+                            <code style="font-size:11px;"><?php echo esc_html($value); ?></code>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
     }
 
     /**

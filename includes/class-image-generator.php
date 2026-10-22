@@ -172,7 +172,7 @@ class AIFIG_Image_Generator
         // Build prompt from template, applying the chosen style preset and
         // brand colour (per-post override or the global setting).
         $style  = isset($args['style']) ? $args['style'] : null;
-        $color  = $this->resolve_color($args);
+        $color  = $this->resolve_color($args, $post_id);
         $prompt = $this->build_prompt($title, $style, $color);
 
         // Get image dimensions.
@@ -368,13 +368,15 @@ class AIFIG_Image_Generator
     /**
      * Resolve the brand colour for this generation.
      *
-     * A per-post override in $args wins; otherwise the global colour theme is
-     * used when enabled. Returns '' when no colour applies.
+     * A per-post override in $args wins; then, when the colour theme is on, a
+     * per-category rule for one of the post's categories; otherwise the global
+     * brand colour. Returns '' when no colour applies.
      *
-     * @param array $args Generation args (optional 'color' key).
+     * @param array $args    Generation args (optional 'color' key).
+     * @param int   $post_id Post being generated for (for category rules).
      * @return string Hex colour or ''.
      */
-    private function resolve_color($args)
+    private function resolve_color($args, $post_id = 0)
     {
         if (isset($args['color'])) {
             $override = sanitize_hex_color($args['color']);
@@ -387,12 +389,30 @@ class AIFIG_Image_Generator
             }
         }
 
-        if (get_option('aifig_color_enabled', false)) {
-            $color = sanitize_hex_color(get_option('aifig_color_value', ''));
-            return $color ? $color : '';
+        if (!get_option('aifig_color_enabled', false)) {
+            return '';
         }
 
-        return '';
+        // A per-category colour rule overrides the global brand colour.
+        if ($post_id) {
+            $category_colors = get_option('aifig_category_colors', array());
+            if (is_array($category_colors) && !empty($category_colors)) {
+                $term_ids = wp_get_post_terms($post_id, 'category', array('fields' => 'ids'));
+                if (!is_wp_error($term_ids)) {
+                    foreach ($term_ids as $term_id) {
+                        if (!empty($category_colors[$term_id])) {
+                            $category_color = sanitize_hex_color($category_colors[$term_id]);
+                            if ($category_color) {
+                                return $category_color;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $color = sanitize_hex_color(get_option('aifig_color_value', ''));
+        return $color ? $color : '';
     }
 
     /**

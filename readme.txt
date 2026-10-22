@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -19,6 +19,7 @@ Featured Image Creator AI is the ultimate tool to automatically generate profess
 
 * **Style Presets**: **NEW!** One-click looks — Photographic, Flat Illustration, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut and more. No prompt-writing needed.
 * **Text & Logo Overlay**: **NEW!** Burn the post title and/or your logo straight onto the image — auto-wrapped headline, font weight, color, position, readability scrim, and corner watermark. Bundled Poppins font; uses Imagick or GD.
+* **Colour Theme & Per-category Colours**: **NEW!** Set a brand colour that new images are built around, and optionally give individual categories their own colour so different sections of your site stay on-brand in their own shade.
 * **Image Variations**: **NEW!** Generate several options at once and pick your favorite from a grid. The unchosen images are cleaned up automatically.
 * **Auto Alt Text**: **NEW!** Writes accessible, SEO-friendly alt text by actually describing the generated image with the provider's vision model (OpenAI / Gemini), with a title-based fallback.
 * **Social & Open Graph Images**: **NEW!** Create Facebook/Open Graph (1200×630), Twitter, square and Pinterest sizes from the same generated image — cropped locally with no extra API cost. Optionally sets the Open Graph share image for Yoast SEO / Rank Math, or outputs og:image tags itself.
@@ -185,6 +186,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.2.1 =
+* **New: Per-category colours.** On top of the global Colour Theme, you can now assign a brand colour to individual categories. Posts in a category with its own colour are built around that colour instead of the site-wide one, so a "News" section can run blue while "Recipes" runs green. Posts in a category without a rule keep using the global colour, and a per-post override still beats everything.
+
 = 1.2.0 =
 * **New: Colour Theme.** Pick a brand colour under Settings and new images are built around it. The colour is woven into the generation prompt so every provider leans on it, with an optional "Exact Colour" toggle that recolours the finished image locally (Imagick or GD) toward your exact hue at an adjustable strength. No extra API cost.
 * **New: Recolour existing images.** A "Recolour Existing" tab on the Bulk Generate screen shifts the colours of featured images you already have toward your brand colour. The image stays exactly the same, only the colours change, and it runs on your server with no API calls.
@@ -259,6 +263,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Adds per-category colours: assign a brand colour to individual categories so different sections of your site get different-coloured images, on top of the global Colour Theme.
 
 = 1.2.0 =
 Adds a brand Colour Theme for new images, a bulk "Recolour Existing" tool that shifts your current featured images toward that colour, and a Test API Key button on the settings screen. Auto-generate on publish now also catches posts published directly.
