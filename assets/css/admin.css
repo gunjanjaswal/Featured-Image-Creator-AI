@@ -259,9 +259,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: #fff;
 	border: none;
-	color: #fff;
+	color: #764ba2;
 	text-shadow: none;
 	height: auto;
 	line-height: 1.2;
@@ -269,18 +269,18 @@
 	font-size: 16px;
 	font-weight: 600;
 	border-radius: 8px;
-	box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 	transition: all 0.3s ease;
 	cursor: pointer;
 }
 
 .aifig-bulk-container .button.aifig-start-batch:hover,
 .aifig-bulk-container .button.aifig-start-batch:focus {
-	color: #fff;
+	color: #764ba2;
 	border-color: transparent;
 	transform: translateY(-2px);
-	box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
-	background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+	background: #f4f1fb;
 }
 
 .aifig-bulk-container .button.aifig-start-batch:active {

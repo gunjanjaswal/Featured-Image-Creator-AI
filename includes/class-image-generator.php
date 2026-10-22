@@ -56,11 +56,15 @@ class AIFIG_Image_Generator
             case 'gpt-image-1':
             case 'gpt-image-1-mini':
             case 'gpt-image-1.5':
-            case 'gpt-image-latest':
-                // Assuming these map to specific OpenAI models or similar
-                // Adjust model name logic as needed based on actual API requirements
-                // For now, passing the setting value as the model name
+                // These are real OpenAI image model ids; send them as-is.
                 $this->api_provider = new AIFIG_OpenAI_Provider($api_key, $provider_setting, $quality);
+                break;
+            case 'gpt-image-latest':
+                // OpenAI has no "latest" alias for image models, so an id of
+                // "gpt-image-latest" is rejected by the API. Point this at the
+                // current flagship GPT Image model instead. Also rescues sites
+                // that already saved this value.
+                $this->api_provider = new AIFIG_OpenAI_Provider($api_key, 'gpt-image-1', $quality);
                 break;
             case 'gemini':
                 $this->api_provider = new AIFIG_Gemini_Provider($api_key);

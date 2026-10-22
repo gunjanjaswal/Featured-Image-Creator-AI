@@ -4,7 +4,7 @@ Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -186,6 +186,10 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 
 == Changelog ==
 
+= 1.2.3 =
+* Fixed the "Regenerate All Images" button (and the Generate/Recolour buttons) blending into the purple banner behind it. The button is now solid white with purple text, so it clearly reads as a button.
+* Fixed the "GPT Image Latest" model option failing to generate. OpenAI has no model called "latest", so picking it returned an error. It now maps to the current GPT Image model, and sites already set to it are fixed automatically on update.
+
 = 1.2.2 =
 * Every site now defaults to a 1200x675 (16:9) image size. New installs already started there; on update, existing sites that were still on the old 1024x675 size (or any other saved size) are moved to 1200x675 once. You can still change the size afterward under Settings, and your choice sticks.
 
@@ -266,6 +270,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 * WordPress.org standards compliance
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Makes the Bulk Generate buttons clearly visible against the purple banner, and fixes the "GPT Image Latest" model option, which previously returned an error when generating.
 
 = 1.2.2 =
 Standardises the image size at 1200x675 for every site. Existing installs still on the old 1024x675 (or another saved size) are moved to 1200x675 once on update; you can change it afterward in Settings.
