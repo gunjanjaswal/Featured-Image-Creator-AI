@@ -2,9 +2,9 @@
 Contributors: gunjanjaswal
 Tags: AI, featured image, DALL-E, stable diffusion, gemini
 Requires at least: 5.8
-Tested up to: 7.1
+Tested up to: 7.1.4
 Requires PHP: 7.4
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://ko-fi.com/gunjanjaswal
@@ -185,6 +185,9 @@ Yes, the plugin works with both the Classic Editor and Gutenberg (Block Editor).
 4. Generated featured image example
 
 == Changelog ==
+
+= 1.2.4 =
+* Tested and confirmed compatible with WordPress 7.1.4.
 
 = 1.2.3 =
 * Fixed the "Regenerate All Images" button (and the Generate/Recolour buttons) blending into the purple banner behind it. The button is now solid white with purple text, so it clearly reads as a button.
