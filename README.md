@@ -389,6 +389,8 @@ Bundled **Poppins** font is used under the [SIL Open Font License](https://scrip
 
 ## 🗒️ Changelog
 
+The full changelog lives in [`readme.txt`](readme.txt). Recent releases:
+
 ### 1.2.4
 - Tested and confirmed compatible with WordPress 7.1.4.
 
@@ -407,71 +409,4 @@ Bundled **Poppins** font is used under the [SIL Open Font License](https://scrip
 - **New: Recolour existing images.** A "Recolour Existing" tab on the Bulk Generate screen shifts the colours of featured images you already have toward your brand colour. The image stays exactly the same, only the colours change, and it runs on your server with no API calls.
 - **New: Test API Key button.** On the settings screen, check your saved key against the provider without generating an image. It reports success or the exact error, so a wrong key is caught before you run a batch.
 - Auto-generate on publish now also covers posts published directly from new (for example via the REST API or quick publish), not only drafts and scheduled posts. A post published without a featured image still gets one.
-
-### 1.1.3
-- Fixed the "Generate All Images" button on the Bulk Generate screen showing up invisible against the purple banner. It was falling back to WordPress's default button styling instead of the plugin's own, so the label and border washed out and you could barely see it.
-- The progress and results panels on the Bulk Generate screen now run the full width of the page and sit centered, instead of being squeezed into a narrow card.
-- Default image size is now 1200x675 (a clean 16:9) instead of 1024x675. Sites that already have a size saved keep it; this only changes the default for new installs.
-
-### 1.1.2
-- The featured image now appears straight away in the block editor after you generate or pick one. It was only ever refreshing the classic editor's featured image box, which the block editor does not have, so the sidebar sat there looking empty until you reloaded the page even though the image had saved fine.
-- Tidied up a nonce check that a code scanner was reading as missing. The check was always there, the annotation around it just did not cover every line.
-
-### 1.1.1
-- Fixed an OpenAI "HTTP 400: Invalid value: 'standard'" error when generating with the GPT Image models. The quality setting is now mapped to each model's accepted values — DALL-E 3 uses Standard/HD, while GPT Image models use Low/Medium/High/Auto (Standard maps to Medium, HD to High).
-
-### 1.1.0
-- **New: Style Presets.** Pick a ready-made look (Photographic, Flat Illustration, Digital Art, 3D Render, Watercolor, Minimal, Isometric, Cyberpunk, Paper-cut, Corporate, Retro) as a site default or per post — no prompt engineering required. Extendable via the `aifig_style_presets` filter.
-- **New: Text & Logo Overlay.** Burn an auto-wrapped headline (the post title by default) and/or a logo/watermark directly onto generated images. Configurable font weight, size, color, vertical position, readability scrim (gradient/dark/light) and logo corner + size. Renders locally with Imagick or GD using a bundled Poppins (SIL OFL) font.
-- **New: Image Variations.** Generate multiple options at once from the editor and choose your favorite from a grid; unchosen images are deleted automatically. Count is configurable (2–8).
-- **New: Auto Alt Text.** Optionally describe each generated image with the provider's vision model (OpenAI `gpt-4o-mini` / Gemini) and save it as the attachment alt text for SEO and accessibility. Falls back to the post title for providers without vision. Models are filterable (`aifig_openai_vision_model`, `aifig_gemini_vision_model`).
-- **New: Social & Open Graph Images.** Generate Facebook/Open Graph (1200×630), Twitter/X, square (1080×1080) and Pinterest (1000×1500) sizes from each generated image. Cropping is done locally — no extra API credits. Optionally sets the Open Graph share image for Yoast SEO and Rank Math, with an `og:image` / `twitter:image` fallback when no SEO plugin is active. Sizes are extendable via the `aifig_social_variants` filter.
-- **New: "How to use" guide** added to the settings screen and the documentation, covering styles, overlays, variations, alt text and social images.
-- **New: "What's New" panel** shown once after updating the plugin, summarizing the latest features. It is dismissible per user and never appears on a fresh install.
-- Refactored the generator into reusable attachment/variation/alt-text steps; all generation paths (single, bulk, scheduled auto-publish) share the new style, overlay and social handling. Social variants are cleaned up and regenerated whenever the featured image changes.
-
-### 1.0.6
-- WordPress 7.0 integration:
-  - Iframed editor: documented the meta-box-only integration. The meta box renders in the parent admin chrome (not the editor iframe), so no asset changes were required.
-  - AI Client API: added `aifig_is_wp_ai_client_available()` (uses core `wp_supports_ai()` + `wp_ai_client_prompt()`) and `aifig_wp_ai_client_prompt()` helpers. Routing through the core client is opt-in via the `aifig_use_wp_ai_client` filter; bundled OpenAI / Gemini / Stability providers remain the default image-generation path.
-  - Connectors API: registers an `ai_provider` connector on the `wp_connectors_init` action so the encrypted `aifig_api_key` option surfaces on the central Connections screen alongside core's auto-discovered providers. Falls back silently on WP 6.x.
-
-### 1.0.5
-- Updated "Tested up to" to WordPress 7.0.
-- Replaced Buy Me a Coffee donation link with Ko-fi (https://ko-fi.com/gunjanjaswal).
-- Added "Contact Developer" link to plugin row meta on the Plugins screen.
-- Replaced raw error_log() calls on scheduled-publish auto-generate with a new `aifig_auto_generate_result` action hook so site owners can log results themselves.
-- Corrected GitHub repository slug in Documentation row-meta link.
-
-### 1.0.4
-- Fixed fatal error by requiring file.php before calling wp_tempnam() in OpenAI provider
-
-### 1.0.3
-- Enable Output Format selection (PNG/JPG/WEBP) for OpenAI models (images are automatically converted)
-- Updated documentation with full list of supported models and options
-- Improved compatibility with GPT Image 1 (Mini)
-
-### 1.0.2
-- Added new image generation models: GPT Image 1, GPT Image 1 (Mini), GPT Image 1.5, GPT Image Latest
-- Added SeaDream 4.5 support for Stability AI
-- Added image quality settings (Standard/HD/Low) and output format selection (PNG/JPG/WEBP)
-- Added Bulk Regeneration feature to regenerate images for all posts
-- Fixed image dimension error for custom models
-- Improved code quality and security (nonces, escaping)
-
-### 1.0.1
-- Added automatic featured image generation for scheduled posts
-- Fixed author name spelling
-- When a scheduled post is published without a featured image, one is automatically generated
-
-### 1.0.0
-- Initial release
-- OpenAI DALL-E 3 integration
-- Google Gemini (Imagen) integration
-- Stability AI (Stable Diffusion 3) integration
-- Single post image generation
-- Bulk generation for posts without featured images
-- Customizable prompt templates
-- Encrypted API key storage
-- WordPress.org standards compliance
 
